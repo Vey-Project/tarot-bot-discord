@@ -53,8 +53,8 @@ A feature-rich Discord bot for tarot readings, daily card draws, and personal re
 
 ### 1. Clone & enter the repo
 ```bash
-git clone https://github.com/fthyll/TAROT-BOT-READING.git
-cd TAROT-BOT-READING
+git clone https://github.com/Vey-Project/tarot-bot-discord.git
+cd tarot-bot-discord
 ```
 
 ### 2. Create a virtual environment

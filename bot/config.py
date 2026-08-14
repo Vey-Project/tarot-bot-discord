@@ -64,7 +64,7 @@ DONATE_PAYPAL_URL = os.getenv("DONATE_PAYPAL_URL", "")
 DONATE_MESSAGE = os.getenv("DONATE_MESSAGE", "")
 
 # Project metadata (used by /source)
-REPO_URL = os.getenv("REPO_URL", "https://github.com/vveej/tarot-bot-discord")
+REPO_URL = os.getenv("REPO_URL", "https://github.com/Vey-Project/tarot-bot-discord")
 LICENSE_NAME = os.getenv("LICENSE_NAME", "MIT License")
 AUTHOR_NAME = os.getenv("AUTHOR_NAME", "vv3yy")
 
