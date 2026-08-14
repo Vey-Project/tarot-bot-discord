@@ -17,6 +17,7 @@ from .config import (
     DEFAULT_READING_MODE,
     GEMINI_ENABLED,
     GEMINI_MODEL,
+    SAVES_DIR,
     SETTINGS_DIR,
 )
 
@@ -454,6 +455,120 @@ class TarotReading:
             "mode": self.mode,
             "favourite": self.is_favourite,
         }
+
+    def save_to_history(self, filename: str = "readings.json") -> None:
+        """Persist this reading in the format consumed by :class:`TarotSystem`.
+
+        The cog rebuilds its cooldowns, history, and statistics from this file
+        on startup, so saving only the in-memory history is not sufficient.
+        """
+        save_path = SAVES_DIR / filename
+        save_path.parent.mkdir(parents=True, exist_ok=True)
+
+        try:
+            if save_path.exists():
+                with open(save_path, "r", encoding="utf-8") as history_file:
+                    data = json.load(history_file)
+            else:
+                data = {"readings": [], "statistics": {}}
+
+            readings = data.setdefault("readings", [])
+            readings.append({
+                "reading_id": self.reading_id,
+                "user_id": str(self.user_id),
+                "timestamp": self.timestamp.isoformat(),
+                "spread_type": self.spread_type,
+                "question": self.question,
+                "is_daily": self.is_daily,
+                "is_weekly": self.is_weekly,
+                "language": self.language,
+                "mode": self.mode,
+                "favourite": self.is_favourite,
+                "cards": [
+                    {
+                        "name": card.name,
+                        "orientation": card.orientation.value,
+                        "position": position,
+                    }
+                    for card, position in zip(self.cards, self.positions)
+                ],
+            })
+            data["statistics"] = {
+                "total_readings": len(readings),
+                "daily_readings": sum(1 for reading in readings if reading.get("is_daily")),
+                "weekly_readings": sum(1 for reading in readings if reading.get("is_weekly")),
+            }
+
+            with open(save_path, "w", encoding="utf-8") as history_file:
+                json.dump(data, history_file, indent=2, ensure_ascii=False)
+        except (OSError, json.JSONDecodeError, TypeError) as exc:
+            logger.error("Failed to save reading %s: %s", self.reading_id, exc)
+            raise
+
+    async def async_save_to_history(self, filename: str = "readings.json") -> None:
+        """Async-compatible history API used by the Discord command handlers."""
+        self.save_to_history(filename)
+
+    def to_embed(self):
+        """Build the summary embed used by the tarot, daily, and weekly commands."""
+        import discord
+
+        color = self._spread_info.get("color", 0x7289DA)
+        spread_name = self._get_text(self._spread_info["name"])
+        description = self._get_text(self._spread_info["description"])
+        labels = {
+            "id": {"question": "📝 Pertanyaanmu", "meaning": "Makna", "keywords": "Kata kunci", "orientation": "Orientasi", "footer": "Reading ID"},
+            "en": {"question": "📝 Your Question", "meaning": "Meaning", "keywords": "Keywords", "orientation": "Orientation", "footer": "Reading ID"},
+        }
+        label = labels.get(self.language, labels["en"])
+        embed = discord.Embed(
+            title=f"🔮 {spread_name} Reading",
+            description=description,
+            color=color,
+            timestamp=self.timestamp,
+        )
+        if self.question:
+            embed.add_field(name=label["question"], value=f"*{self._shorten(self.question, 1024)}*", inline=False)
+        for index, (card, position) in enumerate(zip(self.cards, self.positions), start=1):
+            embed.add_field(
+                name=f"{index}. {position} — {card.name}",
+                value=(
+                    f"**{label['meaning']}:** {self._shorten(card.meaning, 500)}\n"
+                    f"**{label['keywords']}:** {', '.join(card.keywords[:3]) or '-'}\n"
+                    f"**{label['orientation']}:** {card.orientation_text}"
+                ),
+                inline=False,
+            )
+        embed.set_footer(text=f"{label['footer']}: {self.reading_id[:8]} • {'Daily' if self.is_daily else 'Weekly' if self.is_weekly else 'Spread'} • Mode: {self.mode}")
+        return embed
+
+    def to_detail_embeds(self, page_size: int = 1) -> List:
+        """Build one detailed Discord embed per drawn card."""
+        import discord
+
+        labels = {
+            "id": {"title": "📖 Penjelasan Detail Kartu", "position": "Posisi", "meaning": "Makna", "keywords": "Kata kunci", "footer": "Reading ID"},
+            "en": {"title": "📖 Detailed Card Explanation", "position": "Position", "meaning": "Meaning", "keywords": "Keywords", "footer": "Reading ID"},
+        }
+        label = labels.get(self.language, labels["en"])
+        color = self._spread_info.get("color", 0x7289DA)
+        embeds = []
+        for index, (card, position) in enumerate(zip(self.cards, self.positions), start=1):
+            text = (
+                f"**{label['position']}:** {position}\n"
+                f"**{label['meaning']}:** {card.meaning}\n"
+                f"**{label['keywords']}:** {', '.join(card.keywords[:5]) or '-'}\n\n"
+                f"{card.detailed_description or card.description or ''}"
+            )
+            embed = discord.Embed(
+                title=f"{label['title']} — {card.name} ({index}/{len(self.cards)})",
+                description=self._shorten(text, 4096),
+                color=color,
+                timestamp=self.timestamp,
+            )
+            embed.set_footer(text=f"{label['footer']}: {self.reading_id[:8]}")
+            embeds.append(embed)
+        return embeds
 
     @staticmethod
     def _shorten(text: str, limit: int = 950) -> str:
