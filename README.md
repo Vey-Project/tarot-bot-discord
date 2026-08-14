@@ -358,7 +358,7 @@ MIT — see [LICENSE](LICENSE).
 
 - Traditional tarot symbolism
 - [discord.py](https://github.com/Rapptz/discord.py) library
-- [9Router](https://github.com/9router) for the OpenAI-compatible proxy
+- [9Router](https://github.com/decolua/9router) for the OpenAI-compatible proxy
 - All users providing feedback
 
 ---
