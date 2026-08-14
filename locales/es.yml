@@ -1,0 +1,607 @@
+tarot:
+  question_prompt: ¿Qué te gustaría reflexionar hoy?
+  spread_prompt: Elige un spread de tarot
+  spread_unknown: '❌ Tipo de spread desconocido. Spreads disponibles:
+
+    `single`, `three`, `celtic`, `relationship`, `career`, `yesno`, `weekly`, `love`, `decision`, `selfcare`, `shadow`
+
+
+    Ejemplo: `!tarot three ¿Encontraré amor este año?`'
+  spread_confirm: ⚠️ Este spread usa {count} cartas y puede tardar un momento. ¿Continuar? (Reacciona ✅ en 30 segundos)
+  spread_timeout: ⏰ Tiempo de selección del spread agotado.
+  spread_menu_title: 🔮 Elige Tu Spread de Tarot
+  spread_menu_desc: 'Selecciona un tipo de spread reaccionando abajo:'
+  spread_menu_howto: Cómo Usar
+  spread_menu_howto_desc: Reacciona con el emoji correspondiente o escribe `!tarot [spread] [pregunta]`
+  spread_menu_example: 'Ejemplo: !tarot three ¿Tendré éxito en mi nuevo trabajo?'
+  spread_menu_footer: Elige un spread
+  saved_to_history: ✅ Lectura `{reading_id}` se ha guardado en tu historial.
+  reading_embed:
+    title: 🔮 Lectura {spread_name}
+    question: 📝 Tu Pregunta
+    meaning: Significado
+    keywords: Palabras clave
+    orientation: Orientación
+    footer: ID de Lectura
+  detail_embed:
+    title: 📖 Explicaciones Detalladas de las Cartas
+    description: Explicación completa de cada carta según posición, orientación y tema.
+    footer: ID de Lectura
+  card_images:
+    header: '**🃏 Imágenes de las Cartas:**'
+    title: 'Carta {number}: {name}'
+    position: Posición
+    orientation: Orientación
+    keywords: Palabras clave
+  spread_menu:
+    timeout_title: ⏰ Menú de Spread Agotado
+    timeout_desc: Escribe `!tarot [spread] [pregunta]` cuando estés listo.
+card:
+  card: Carta
+  meaning: Significado principal
+  keywords: Palabras clave
+  explanation: Explicación de la carta
+  position_read: Cómo leer en esta posición
+  orientation_note: Nota de orientación
+  theme: Tema
+  number: Número
+  arcana: Arcano
+  suit: Palo
+  upright: Significado Vertical
+  reversed: Significado Invertido
+  appearances: Apariciones
+  appearances_desc: Esta carta ha aparecido {count} vez/veces en lecturas
+  orientation_changed: '**Orientación cambiada a {orientation}**'
+  not_found: '❌ No se encontró ninguna carta que coincida con ''{name}''.
+
+    Usa `!cards` para ver todas las cartas disponibles.'
+aimodels:
+  title: 📋 Modelos de IA Disponibles (vía 9Router)
+  description: Selecciona un modelo para interpretación de tarot.
+  recommended: 'Recomendado: `kr/claude-sonnet-4.5` (predeterminado, alta calidad)'
+  footer: Selecciona con `!aimodel [model_id]`
+aimodel:
+  current: '📌 Modelo de IA actual: `{model}`'
+  changed: '✅ Modelo de IA cambiado a: `{model}`'
+  error: ❌ Modelo no encontrado. Consulta la lista con `!aimodels`
+  usage: 'Usa `!aimodel [model_id]` para cambiar el modelo de IA.
+
+    Ejemplo: `!aimodel kr/claude-sonnet-4.5`'
+  reset: '🔄 Modelo restablecido al predeterminado: `{model}`'
+ai_status:
+  title: ✨ Estado del Intérprete de IA
+  enabled: Activado ✅
+  disabled: Desactivado ⏸️
+  not_configured: No Configurado ⚠️
+  enabled_detail: 'Modo: `{mode}`
+
+    Modelo: `{model}`
+
+    Timeout: `{timeout}s`
+
+    Tokens máximos de salida: `{tokens}`
+
+    Límite de continuación: `{limit}`'
+  disabled_detail: Establece `GEMINI_ENABLED=true` en `.env` para activar la IA.
+  not_configured_detail: Añade `GEMINI_API_KEY=your_key_here` a `.env` o activa 9Router.
+  footer: Las explicaciones locales funcionan sin IA.
+  user_enabled: 'IA para el usuario: **{status}**'
+  user_setting_on: Activado
+  user_setting_off: Desactivado
+ai_interpretation:
+  title: ✨ Interpretación de IA
+  model: Modelo
+  footer: ID de Lectura
+  generating: ✨ Generando interpretación de IA...
+  failed: ⚠️ No se pudo crear la interpretación de IA. Las explicaciones locales siguen disponibles arriba.
+  truncated: ⚠️ La interpretación de IA aún alcanzó el límite de longitud. Aumenta `GEMINI_MAX_OUTPUT_TOKENS` o `GEMINI_CONTINUATION_LIMIT` en `.env`.
+language:
+  current: '🌐 Tu idioma actual: **{lang_code}**
+
+    Usa `!language id`, `en`, `pt`, `es` o `de` para cambiar.'
+  error: '❌ Idioma desconocido. Opciones disponibles: `id`, `en`, `pt`, `es`, `de`'
+  help: Usa `!language id`, `en`, `pt`, `es` o `de`
+  set: ✅ Idioma cambiado a **{lang_code}**
+  supported_list: 'Compatibles: {list}'
+mode:
+  current: 'Tu modo de lectura actual: **{mode}**'
+  changed: ✅ Modo cambiado a **{mode}**
+  invalid: ❌ Modo inválido.
+  available: 'Modos disponibles:
+
+    • `simple` - Conciso y fácil de entender
+
+    • `deep` - Interpretación detallada
+
+    • `gentle` - Tono suave
+
+    • `direct` - Respuestas directas'
+  help: Usa `!mode simple` o `!mode deep`
+ai_toggle:
+  enabled: ✅ Interpretación de IA activada.
+  disabled: ⏸️ Interpretación de IA desactivada.
+cooldown:
+  message: ⏳ **¡Cooldown!** Espera **{wait}** antes de usar `/tarot` de nuevo.
+error:
+  generic: 💥 Ocurrió un error inesperado. Por favor, inténtalo de nuevo más tarde.
+  not_found: ❌ Comando no encontrado. Usa `!help` para ver todos los comandos disponibles.
+  missing_arg: ⚠️ Falta un argumento. Usa `!help {command}` para uso correcto.
+  bad_arg: ⚠️ Argumento inválido. Por favor, verifica tu entrada e inténtalo de nuevo.
+  no_permission: ⚠️ No tienes permiso para usar este comando.
+weekly:
+  cooldown: '⏰ Ya has hecho una lectura semanal. Cooldown: {time} restante.'
+  cooldown_title: ⏳ Cooldown Semanal
+  cooldown_desc: Espera **{time}** antes de obtener tu próxima lectura semanal.
+  embed_title: 📅 Lectura Semanal de Tarot
+  embed_footer: Lectura semanal • Próxima disponible en
+daily:
+  cooldown: ⏰ Ya sacaste tu carta diaria. Inténtalo de nuevo en **{time}**.
+  no_streak: 🔥 ¡Comienza tu racha diaria hoy!
+  streak_continued: 🔥 ¡Racha de {days} día(s)!
+  random_title: 🎲 Carta Aleatoria
+  cooldown_title: ⏳ Cooldown de Carta Diaria
+  cooldown_desc: Espera **{time}** antes de obtener tu próxima carta diaria.
+  embed_title: 📅 Carta Diaria de Tarot
+  advice: 🎯 Consejo de Hoy
+  embed_footer: Lectura diaria • Próxima disponible en
+  date: 📆 Fecha
+  keywords: 🔑 Palabras clave
+journal:
+  add_prompt: 📝 ¿Sobre qué te gustaría reflexionar?
+  add_success: ✅ Entrada de diario guardada con ID `{reading_id}`.
+  no_entries: 📭 Aún no hay entradas en el diario.
+  add_error: '❌ Formato inválido. Usa: `!journal add [reading_id] [nota]`'
+  not_found: ❌ Lectura no encontrada.
+  entry: '**Lectura:** {0}
+
+    **Fecha:** {1}
+
+    **Nota:** {2}'
+  reflection:
+    title: 📝 Diario de Reflexión
+    prompt: 'Escribe tus notas de reflexión para esta lectura. Envía un mensaje con `!journal add {id}` seguido de tu nota.
+
+      Ejemplo: `!journal add {id} Esta es mi reflexión...`'
+    cancel: ⏰ Se acabó el tiempo. Puedes añadir una nota más tarde con `!journal add {id} [nota]`.
+history:
+  no_history: 📜 Sin historial aún. ¡Prueba `/tarot` primero!
+  no_history_full: 📜 Sin Historial de Lecturas
+  no_history_desc: ¡Usa `!tarot` o `!daily` para obtener tu primera lectura!
+  title: 📜 Historial de Lecturas
+  question_label: P
+  cards: Cartas
+  footer: Mostrando {shown} de {total} lecturas • Usa !history [número] para ver más
+insight:
+  no_data: 🔮 No hay suficientes datos para insights. ¡Haz al menos 3 lecturas!
+  title: 🔮 Tus Perspectivas Personales
+  more_data: 🔍 Se Necesitan Más Datos
+  more_data_desc: Haz al menos 3 lecturas para recibir perspectivas personalizadas.
+  description: 'Basado en tu historial de lecturas de tarot:'
+  favorite: Spread Favorito
+  favorite_desc: Usas más frecuentemente el spread `{0}` ({1} veces).
+  reversed: 'Patrón: Muchas cartas invertidas ({0:.0f}%) indican que estás enfrentando desafíos internos o energía bloqueada.'
+  upright: 'Patrón: La mayoría de cartas verticales ({0:.0f}%) muestran una expresión de energía clara y abierta en tu vida.'
+  frequent: Cartas Frecuentemente Sacadas
+  frequent_desc: '{0} aparece con frecuencia en tus lecturas. Este es un tema importante en tu camino de vida.'
+  commitment: 'Compromiso: Con más de 10 lecturas, estás desarrollando una conexión fuerte con la sabiduría del tarot. Considera escribir tus perspectivas en un diario.'
+  statistics: 📊 Estadísticas
+  statistics_desc: '• Total de lecturas: **{0}**
+
+    • Spreads diferentes: **{1}**
+
+    • Cartas únicas sacadas: **{2}**'
+  footer: Perspectivas basadas en tus patrones personales de lectura
+export:
+  success: 📦 ¡Tus datos han sido exportados! Mira el archivo adjunto.
+  sent: ✅ Tus datos de lectura han sido enviados por DM.
+  fallback: ⚠️ No puedo enviarte DM, así que el archivo de exportación se envió aquí.
+  error: 💥 Error al exportar datos. Inténtalo de nuevo más tarde.
+  no_data: 📭 No hay datos para exportar.
+delete:
+  confirm: ⚠️ ¿Seguro que quieres eliminar todos los datos? Escribe `confirm` en 30 segundos.
+  success: 🗑️ Todos tus datos han sido eliminados.
+  deleted: ✅ {0} de tus lecturas han sido eliminadas del almacenamiento del bot.
+  no_data: 📭 No hay datos de lectura para eliminar en tu cuenta.
+  error: 💥 Error al eliminar datos. Inténtalo de nuevo más tarde.
+  timeout: Eliminación cancelada.
+cards:
+  major: 🎴 Cartas de los Arcanos Mayores
+  wands: 🃏 Cartas del Palo de Bastos
+  cups: 🃏 Cartas del Palo de Copas
+  swords: 🃏 Cartas del Palo de Espadas
+  pentacles: 🃏 Cartas del Palo de Oros
+  all: 🃏 Baraja Completa de Tarot
+  overview: 🃏 Resumen de la Baraja de Tarot
+  error: '❌ Categoría inválida. Usa: `major`, `wands`, `cups`, `swords`, `pentacles` o `all`'
+  no_cards: ❌ No se encontraron cartas en esta categoría.
+  page_footer: Página {current}/{total} • Reacciona para navegar
+help:
+  title: 🔮 Menú de Ayuda del Bot de Tarot
+  description: Aprende cómo usar las funciones del bot de tarot
+  main: 🃏 COMANDOS PRINCIPALES
+  main_desc: '`!tarot [spread] [pregunta]` - Obtener una lectura `!card [nombre]` - Detalles de la carta `!cards [categoría]` - Listar cartas `!daily` - Tu carta diaria `!weekly` - Lectura semanal `!tarotdm
+    [spread] [pregunta]` - Lectura vía DM `!history [número]` - Lecturas anteriores `!insight` - Perspectivas personales `!journal add [id] [nota]` - Añadir entrada al diario `!journal` - Ver diario `!exportdata`
+    - Exportar datos `!deletedata confirm` - Eliminar datos `!language [id/en]` - Cambiar idioma `!mode [simple/deep/gentle/direct]` - Cambiar modo `!aimodels` - Listar modelos de IA `!aimodel [model_id]`
+    - Seleccionar modelo de IA `!aion` / `!aioff` - Activar/desactivar IA `!aistatus` - Estado de IA `!botinfo` - Info del bot `!firebase` - Estado de Firebase `!help` - Este menú de ayuda'
+  spreads: 📊 TIPOS DE SPREAD
+  spreads_desc: • `single` - 1 carta, orientación rápida • `three` - 3 cartas, pasado-presente-futuro • `celtic` - 10 cartas, lectura completa • `relationship` - 5 cartas, dinámica de relaciones • `career`
+    - 6 cartas, camino profesional • `yesno` - 3 cartas, orientación sí/no • `weekly` - 5 cartas, orientación semanal • `love` - 6 cartas, perspectivas de amor • `decision` - 5 cartas, ayuda para decisiones
+    • `selfcare` - 5 cartas, autocuidado • `shadow` - 5 cartas, trabajo de sombra
+  modes: 🎭 MODOS DE LECTURA
+  modes_desc: • `simple` - Conciso y fácil de entender • `deep` - Interpretación detallada • `gentle` - Tono suave • `direct` - Respuestas directas
+  cards: 🎴 CATEGORÍAS DE CARTAS
+  cards_desc: • `major` - Arcanos Mayores (22 cartas) • `wands` - Palo de Bastos (14 cartas) • `cups` - Palo de Copas (14 cartas) • `swords` - Palo de Espadas (14 cartas) • `pentacles` - Palo de Oros (14
+    cartas) • `all` - Baraja completa (78 cartas)
+  examples: 💡 EJEMPLOS
+  examples_desc: • `!tarot three ¿Encontraré amor?` • `!card The Fool` • `!cards major` • `!tarot relationship` • `!daily` • `!weekly` • `!language es` • `!mode deep` • `!aimodel kr/claude-sonnet-4.5` •
+    `!tarotdm three Pregunta secreta`
+  tips: 💭 CONSEJOS PARA MEJORES LECTURAS
+  tips_desc: • Enfoca tu pregunta antes de preguntar • Mantén la mente abierta a las interpretaciones • Usa diferentes spreads para diferentes necesidades • Revisa tu historial para ver patrones • El tarot
+    refleja posibilidades, no certezas
+  footer_text: El tarot es un espejo para tu subconsciente • Sé paciente con el viaje
+  category_dict:
+    commands:
+      label: 📖 Comandos principales
+      items:
+      - name: '!tarot [tirada] [pregunta]'
+        desc: Hacer lectura
+      - name: '!card [nombre]'
+        desc: Detalles de carta
+      - name: '!cards [categoría]'
+        desc: Lista de cartas
+      - name: '!daily'
+        desc: Carta diaria
+      - name: '!weekly'
+        desc: Lectura semanal
+      - name: '!tarotdm [tirada] [pregunta]'
+        desc: Lectura por DM
+      - name: '!history [cantidad]'
+        desc: Lecturas pasadas
+      - name: '!insight'
+        desc: Insights personales
+      - name: '!journal add [id] [nota]'
+        desc: Añadir nota
+      - name: '!journal'
+        desc: Ver notas
+      - name: '!exportdata'
+        desc: Exportar datos
+      - name: '!deletedata confirm'
+        desc: Borrar datos
+      - name: '!language [id/en]'
+        desc: Cambiar idioma
+      - name: '!mode [simple/deep/gentle/direct]'
+        desc: Cambiar modo
+      - name: '!aimodels'
+        desc: Lista de modelos IA
+      - name: '!aimodel [model_id]'
+        desc: Elegir modelo IA
+      - name: '!aion / !aioff'
+        desc: Activar/desactivar IA
+      - name: '!aistatus'
+        desc: Estado IA
+      - name: '!botinfo'
+        desc: Info del bot
+      - name: '!firebase'
+        desc: Estado Firebase
+      - name: '!help'
+        desc: Este menú de ayuda
+    spreads:
+      label: 📊 Tipos de tirada
+      items:
+      - name: single
+        desc: 1 carta, guía rápida
+      - name: three
+        desc: 3 cartas, pasado-presente-futuro
+      - name: celtic
+        desc: 10 cartas, lectura completa
+      - name: relationship
+        desc: 5 cartas, dinámica de relación
+      - name: career
+        desc: 6 cartas, camino profesional
+      - name: yesno
+        desc: 3 cartas, guía sí/no
+      - name: weekly
+        desc: 5 cartas, guía semanal
+      - name: love
+        desc: 6 cartas, insights de amor
+      - name: decision
+        desc: 5 cartas, ayuda decisoria
+      - name: selfcare
+        desc: 5 cartas, autocuidado
+      - name: shadow
+        desc: 5 cartas, sombra interior
+    modes:
+      label: 🎭 Modos de lectura
+      items:
+      - name: simple
+        desc: Conciso y fácil
+      - name: deep
+        desc: Interpretación profunda
+      - name: gentle
+        desc: Tono suave
+      - name: direct
+        desc: Respuestas directas
+    categories:
+      label: 🎴 Categorías de cartas
+      items:
+      - name: major
+        desc: Arcanos Mayores (22 cartas)
+      - name: wands
+        desc: Palo de Bastos (14 cartas)
+      - name: cups
+        desc: Palo de Copas (14 cartas)
+      - name: swords
+        desc: Palo de Espadas (14 cartas)
+      - name: pentacles
+        desc: Palo de Oros (14 cartas)
+      - name: all
+        desc: Baraja completa (78 cartas)
+  category_picker: Elige una categoría para ver los elementos…
+  category_picker_short: Elige una categoría…
+  category_detail_title: 📚 {name}
+  category_not_found: ❌ Categoría no encontrada.
+botinfo:
+  title: 🤖 Bot de Tarot
+  description: Tu guía digital para la sabiduría del tarot
+  statistics: 📊 Estadísticas
+  statistics_desc: '• Total de Usuarios: **{0}**
+
+    • Lecturas Realizadas: **{1}**
+
+    • Cartas en la Baraja: **{2}**
+
+    • Spreads Disponibles: **{3}**'
+  card_stats: 🎴 Estadísticas de Cartas
+  card_stats_desc: 'Carta Más Común: **{0}** ({1} apariciones)
+
+    Arcanos Mayores: **{2}** cartas
+
+    Arcanos Menores: **{3}** cartas'
+  technical: ⚙️ Información Técnica
+  technical_desc: '• Estado: En línea ✅
+
+    • Versión: 2.5.0
+
+    • Desarrollador: __xvey
+
+    • Soporte: Usa `!help`'
+  features: ✨ Características
+  feature_picker: Elige una función del menú de abajo para leer su descripción completa.
+  feature_picker_short: Elige una función…
+  feature_detail_title: 📖 {name}
+  features_dict:
+    cards:
+      label: 🎴 78 cartas de tarot detalladas
+      desc: 'Accede a 78 cartas de tarot completas con significados, palabras clave, explicaciones por posición y orientación (normal/invertida). Usa `!card [nombre]` o `/card [nombre]`.
+
+        '
+      short: 78 cartas completas con significados, palabras clave y orientaciones.
+    commands:
+      label: ⚡ Comandos prefijo y slash
+      desc: 'El bot soporta dos estilos: prefijo `!comando` (ej. `!tarot`) y slash `/comando` (ej. `/tarot`). Ambos funcionan igual — ¡elige tu favorito!
+
+        '
+      short: 'Dos estilos: prefijo `!cmd` y slash `/cmd`. ¡Elige tu favorito!'
+    spreads:
+      label: 📊 11 tipos de tirada
+      desc: 'Elige entre 11 tiradas: one, two, three, four, five, six, seven, eight, love, career y celtic. Cada una tiene layout y cantidad de cartas únicos — de 1 a 10 cartas.
+
+        '
+      short: '11 tiradas: one, two, three, four, five, six, seven, eight, love, career, celtic.'
+    card_explain:
+      label: 📖 Explicaciones completas
+      desc: 'Cada carta tiene explicación detallada según su posición en la tirada y orientación (normal/invertida). Significados contextuales (carrera, amor, espiritual) también disponibles.
+
+        '
+      short: Explicación detallada por carta, posición, orientación y contexto.
+    languages:
+      label: 🌐 Soporte multiidioma
+      desc: 'El bot soporta 5 idiomas: 🇮🇩 Bahasa Indonesia (predeterminado), 🇬🇧 English, 🇵🇹 Português, 🇪🇸 Español, 🇩🇪 Deutsch. Cambia con `!language [código]`, ej. `!language es`.
+
+        '
+      short: '5 idiomas: 🇮🇩 🇬🇧 🇵🇹 🇪🇸 🇩🇪. Cambia con `!language [código]`.'
+    modes:
+      label: 🎭 4 modos de lectura
+      desc: 'Elige el modo adecuado: `simple` (conciso), `deep` (profundo), `gentle` (suave y acogedor) o `direct` (directo y sin rodeos). Cambia con `!mode [modo]`.
+
+        '
+      short: '4 modos: `simple`, `deep`, `gentle`, `direct`. Cambia con `!mode [modo]`.'
+    ai_interpret:
+      label: ✨ Interpretación con IA
+      desc: 'Interpretación extra por IA (9Router). Puedes elegir el modelo con `!aimodel [model_id]` o ver la lista con `!aimodels`. Desactiva con `!aioff`.
+
+        '
+      short: Interpretación extra por IA. Elige el modelo con `!aimodel`.
+    daily:
+      label: 📅 Lectura diaria
+      desc: 'Recibe una carta diaria para reflexión. Cooldown de 24 horas. Usa `!daily` o `/daily`.
+
+        '
+      short: Una carta diaria para reflexión. Cooldown 24h.
+    weekly:
+      label: 📆 Lectura semanal
+      desc: 'Recibe un resumen de 7 cartas para la semana. Cooldown de 7 días. Usa `!weekly` o `/weekly`.
+
+        '
+      short: Resumen semanal de 7 cartas. Cooldown 7 días.
+    history:
+      label: 💾 Historial e insights
+      desc: 'Todas las lecturas se guardan automáticamente. Ve con `!history` y obtén insights personales de los patrones que surgen.
+
+        '
+      short: Todas las lecturas guardadas automáticamente. Ve con `!history`.
+    images:
+      label: 🖼️ Imágenes y layouts
+      desc: 'Cada carta tiene su imagen (78 imágenes únicas Rider-Waite). Las lecturas generan imágenes de layout automáticamente mostrando cada carta en su posición.
+
+        '
+      short: 78 imágenes Rider-Waite + layouts automáticos.
+    search:
+      label: 🔍 Búsqueda de cartas
+      desc: 'Encuentra una carta por nombre con `!card [nombre]` o `/card [nombre]`. También puedes usar `!cards` para ver la lista completa.
+
+        '
+      short: Encuentra cartas por nombre con `!card [nombre]`.
+    data_control:
+      label: 🔒 Exportar/borrar datos
+      desc: 'Tú eres dueño de tus datos. Exporta todos los datos personales con `!export`, o bórralos permanentemente con `!delete`. (Local & Firebase si está activado.)
+
+        '
+      short: Tú eres dueño de tus datos. Exporta `!export`, borra `!delete`.
+    journal:
+      label: 📝 Diario de reflexión
+      desc: 'Añade notas personales a tus lecturas con `!journal add [reading_id] [nota]`. Ve todas con `!journal`. La reflexión profundiza el insight.
+
+        '
+      short: Notas personales para lecturas. `!journal add [id] [nota]`.
+    privacy:
+      label: 🔒 Modo privacidad (DM)
+      desc: 'Para lecturas sensibles, usa `!tarotdm` — el bot te envía el resultado por DM, no visible en el servidor.
+
+        '
+      short: 'Modo DM para lecturas sensibles: `!tarotdm`.'
+    cloud:
+      label: ☁️ Firestore Cloud Storage
+      desc: 'Si Firebase está activado, tus datos se sincronizan automáticamente con la nube Firestore — accesible desde cualquier lugar y mantenido seguro.
+
+        '
+      short: Sincronización automática a Firestore si Firebase está activo.
+  footer: El tarot es una herramienta de reflexión, no de predicción
+  feature_not_found: ❌ Función no encontrada.
+firebase_status:
+  title: ☁️ Estado de Firebase
+  connected: Conectado ✅
+  disconnected: Desconectado ❌
+  enabled: Activado
+  disabled: Desactivado
+  sdk: 'Firebase Admin SDK: **{0}**'
+  status: 'Estado: **{0}**'
+  database: 'URL de la Base de Datos: `{0}`'
+  storage: 'Bucket de Almacenamiento: `{0}`'
+  readings: 'Total de lecturas en la nube: **{0}**'
+sync_db:
+  title: 🔄 Sincronización de Base de Datos
+  start: 🔄 Iniciando sincronización de datos con Firebase...
+  success: ✅ ¡Sincronización completada! {0} lecturas sincronizadas.
+  error: '❌ Error en la sincronización: {0}'
+  not_enabled: ❌ Firebase no está activado.
+tarotdm:
+  sending: 🔮 Enviando lectura vía DM...
+card_selection:
+  title: 🔍 Varias Cartas Encontradas para '{name}'
+  description: 'Reacciona con el número de la carta que querías decir:'
+  footer: O escribe !card [nombre exacto de la carta]
+
+ping:
+  latency: '🏓 ¡Pong! Latencia: **{latency}ms**'
+uptime:
+  title: '⏱️ Tiempo activo del bot'
+  value: 'El bot lleva funcionando **{uptime}** desde {started_at}.'
+profile:
+  title: '👤 Tu Perfil de Tarot'
+  user: Usuario
+  language: Idioma
+  mode: Modo de Lectura
+  ai: Interpretación de IA
+  ai_model: Modelo de IA
+  total_readings: Total de Lecturas
+serverstats:
+  title: '📊 Estadísticas del Servidor'
+  guild: Servidor
+  total_readings: 'Total de Lecturas (global)'
+  ai_enabled: IA Activada
+feedback:
+  prompt: '📝 Envía feedback (máx 500 caracteres)'
+  success: '✅ Tu feedback ha sido enviado. ¡Gracias!'
+  error: '❌ Feedback vacío o demasiado largo.'
+reset_settings:
+  confirm: '⚠️ ¿Restablecer configuración? Escribe `yes` en 30 segundos.'
+  done: '✅ Configuración restablecida.'
+  cancelled: '❌ Restablecimiento cancelado.'
+invite:
+  title: '🔗 Invitar Tarot Bot'
+  desc: '¡Añade este bot a tu servidor!'
+favourite:
+  no_history: '❌ No hay lecturas en el historial.'
+  favourited: '⭐ Lectura `{reading_id}` marcada como favorita.'
+  unfavourited: '❌ Lectura `{reading_id}` eliminada de favoritas.'
+  not_found: '❌ Lectura `{reading_id}` no encontrada.'
+remind:
+  set_daily: '✅ Recordatorio diario activado para `{target}`. Recibirás una notificación cada día.'
+  set_weekly: '✅ Recordatorio semanal activado para `{target}`. Recibirás una notificación cada semana.'
+  "off": "'⏸️ Recordatorio para `{target}` desactivado.'"
+  replaced: '� Recordatorio para `{target}` reemplazado (era: `{previous}`).'
+  not_found: '� Aún no tienes un recordatorio. Usa `/remind set <target> <interval>`.'
+  deleted: '🗑️ Recordatorio para `{target}` eliminado.'
+  list_empty: '📭 No tienes recordatorios activos.'
+  list_title: '⏰ Recordatorios Activos'
+  list_entry: '• **{target}** → `{interval}` (próximo: `{next}`)'
+  interval_invalid: '⚠️ Intervalo no válido. Usa: `daily`, `weekly` o `off`.'
+  target_invalid: '⚠️ Objetivo no válido. Elige: `daily_card`, `weekly` o `tarotdm`.'
+  paused: '⏸️ Recordatorio para `{target}` pausado.'
+  resumed: '▶️ Recordatorio para `{target}` reanudado.'
+  fired_dm: '🔔 ¡Eh! Es hora de **{target}**. ¡Escribe `/tarot` cuando estés listo!'
+  fired_channel: '🔔 ¡<@{user_id}>! Es hora de **{target}**. ¡Escribe `/tarot` cuando estés listo!'
+  next_at: 'próximo en {time}'
+  disabled: '⏸️ (desactivado)'
+  targets:
+    daily_card: 'Carta Diaria'
+    weekly: 'Lectura Semanal'
+    tarotdm: 'Tarot DM'
+share:
+  no_history: '❌ Aún no tienes lecturas. ¡Prueba `/tarot` primero!'
+  invalid_id: '❌ Lectura `{reading_id}` no encontrada.'
+  dm_sent: '✅ Lectura enviada al DM de <@{user_id}>.'
+  dm_failed: '⚠️ No se pudo enviar el DM. El usuario puede tener los DMs desactivados.'
+  channel_sent: '✅ Lectura compartida en este canal.'
+  embed_title: '🔮 Lectura de Tarot de {author}'
+  embed_question: '**Pregunta:** {question}'
+  embed_question_none: '**Pregunta:** _(ninguna)_'
+  embed_spread: '**Tipo:** {spread}'
+  embed_cards: '**Cartas ({n}):** {cards}'
+  embed_time: '**Hora:** {time}'
+  embed_id: '**ID:** `{reading_id}`'
+  embed_footer: 'Compartido vía /share • {reading_id_short}'
+donate:
+  title: '☕ Apoya al Desarrollador'
+  desc: 'Si este bot de tarot te ayuda, considera invitarme un café ☕ como agradecimiento.'
+  ko_fi: '🐰 Donar via Ko-fi'
+  paypal: '💙 Donar via PayPal'
+  custom_message: '¡Gracias por usar este bot! 🙏'
+  footer: 'Tu apoyo mantiene el bot en línea y ayuda a seguir desarrollándolo.'
+source:
+  title: '📦 Código Fuente'
+  repo: '**Repositorio:** [Ver en GitHub]({url})'
+  version: '**Versión del Bot:** `v{version}`'
+  license: '**Licencia:** {license}'
+  author: '**Desarrollador:** {author}'
+  stack: '**Stack:**'
+  python: '🐍 Python {version}'
+  discord_py: '🤖 discord.py {version}'
+  total_locales: '🌍 Localizaciones: {n} idiomas'
+  footer: '¡Este bot es open source. Las contribuciones y los comentarios siempre son bienvenidos!'
+changelog:
+  title: '📜 Notas de Versión'
+  no_changelog: '⚠️ El archivo CHANGELOG.md aún no está disponible.'
+  empty: 'ℹ️ Aún no hay notas de versión.'
+  release_date: '_Fecha de lanzamiento: {date}_'
+  no_date: '_Fecha de lanzamiento desconocida_'
+  section_added: '➕ Añadido'
+  section_changed: '🔄 Cambiado'
+  section_deprecated: '⚠️ Obsoleto'
+  section_removed: '➖ Eliminado'
+  section_fixed: '🐛 Corregido'
+  section_security: '🔒 Seguridad'
+  footer: 'Ver {path} para la lista completa.'
+resetcooldown:
+  title: '⏱️ Reiniciar Cooldown'
+  desc_user: 'El cooldown de <@{user_id}> ({mention}) se ha reiniciado.'
+  desc_user_all: '✅ Cooldown **daily + weekly** de <@{user_id}> ({mention}) se ha reiniciado.'
+  desc_user_daily: '✅ Cooldown **daily** de <@{user_id}> ({mention}) se ha reiniciado.'
+  desc_user_weekly: '✅ Cooldown **weekly** de <@{user_id}> ({mention}) se ha reiniciado.'
+  desc_server: '✅ Todos los cooldowns en este servidor se han reiniciado ({count} usuarios).'
+  no_cooldown_user: 'ℹ️ <@{user_id}> no tiene cooldown activo.'
+  no_cooldown_server: 'ℹ️ No hay cooldowns activos en este servidor.'
+  invalid_kind: '⚠️ Tipo de cooldown inválido. Elige: `daily`, `weekly`, o `all`.'
+  invalid_target: '⚠️ Objetivo inválido. Elige un usuario cuyo cooldown quieres reiniciar.'
+  footer: 'Realizado por {admin} • cooldown {kind}'

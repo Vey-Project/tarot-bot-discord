@@ -1,0 +1,8 @@
+{
+  "user_id": 123456789,
+  "language": "id",
+  "reading_mode": "deep",
+  "ai_enabled": true,
+  "ai_model": "kr/claude-sonnet-4.5",
+  "updated_at": "2026-08-11T14:18:29.772386"
+}

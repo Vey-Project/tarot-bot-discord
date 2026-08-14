@@ -1,0 +1,23 @@
+.env
+.env.*
+!.env.example
+
+__pycache__/
+*.py[cod]
+*.log
+
+# Local backups (auto-saved before edits)
+backups/
+*.bak
+*.bak.*
+
+.DS_Store
+images/.DS_Store
+
+saves/*.json
+!saves/.gitkeep
+
+# Firebase credentials — NEVER commit
+firebase-credentials.json
+*-firebase-adminsdk-*.json
+gcp-service-account*.json
