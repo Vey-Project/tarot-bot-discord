@@ -27,6 +27,7 @@ from .ai import GeminiTarotInterpreter
 from .changelog import latest_releases
 from .config import (
     AUTHOR_NAME,
+    BOT_ADMIN_IDS,
     DEFAULT_LANGUAGE,
     DONATE_KOFI_URL,
     DONATE_MESSAGE,
@@ -73,6 +74,14 @@ from bot_i18n import get as _get, get_supported_locales, is_supported, t as _
 # NOTE: __version__ is read lazily inside __init__ to avoid a circular import
 # (bot/bot.py imports this cog, so importing the package at module-load time
 # would race against __init__.py's tail statements that define __version__).
+
+
+def is_bot_admin(ctx) -> bool:
+    """Allow Discord administrators and explicitly configured bot admins."""
+    if getattr(getattr(ctx, "author", None), "id", None) in BOT_ADMIN_IDS:
+        return True
+    permissions = getattr(getattr(ctx, "author", None), "guild_permissions", None)
+    return bool(getattr(permissions, "administrator", False))
 
 logger = logging.getLogger(__name__)
 
@@ -2426,7 +2435,7 @@ class TarotSystem(commands.Cog):
         name='syncdb',
         description='🔄 Sinkronisasi data lokal ke Firebase (Admin only)'
     )
-    @commands.has_permissions(administrator=True)
+    @commands.check(is_bot_admin)
     async def sync_db_command(self, ctx):
         user_settings, _server_settings = self._get_settings(ctx.author.id, ctx.guild.id if ctx.guild else None)
         language = user_settings.get_lang()
@@ -3006,7 +3015,7 @@ class TarotSystem(commands.Cog):
         name='resetcooldown',
         description='⏱️ [Admin] Reset cooldown user atau seluruh server'
     )
-    @commands.has_permissions(administrator=True)
+    @commands.check(is_bot_admin)
     async def resetcooldown_command(
         self,
         ctx,
@@ -3271,4 +3280,3 @@ class TarotSystem(commands.Cog):
 
         view = HelpView(language, self)
         await ctx.send(embed=embed, view=view)
-

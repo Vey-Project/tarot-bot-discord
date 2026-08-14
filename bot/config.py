@@ -41,6 +41,18 @@ def _env_int(name: str, default: int) -> int:
         return default
 
 
+def _env_int_set(name: str, default: set[int]) -> set[int]:
+    """Read a comma-separated set of Discord user IDs from the environment."""
+    raw = os.getenv(name)
+    if raw is None:
+        return default
+    return {
+        int(value.strip())
+        for value in raw.split(",")
+        if value.strip().isdigit()
+    }
+
+
 # ============================================================
 # GEMINI / 9ROUTER
 # ============================================================
@@ -77,6 +89,9 @@ NINE_ROUTER_API_KEY = os.getenv("NINE_ROUTER_API_KEY", "sk-9router-default-key")
 SYNC_SLASH_COMMANDS = _env_bool("SYNC_SLASH_COMMANDS", True)
 DEFAULT_LANGUAGE = os.getenv("DEFAULT_LANGUAGE", "id")
 DEFAULT_READING_MODE = os.getenv("DEFAULT_READING_MODE", "deep")
+# Users in this list may run bot admin commands without holding a Discord
+# Administrator role. Override with a comma-separated BOT_ADMIN_IDS value.
+BOT_ADMIN_IDS = _env_int_set("BOT_ADMIN_IDS", {789065787276132392})
 
 # Firebase
 FIREBASE_ENABLED = _env_bool("FIREBASE_ENABLED", False)
