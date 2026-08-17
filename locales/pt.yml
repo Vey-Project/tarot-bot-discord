@@ -84,8 +84,8 @@ ai_status:
     Tokens máximos de saída: `{tokens}`
 
     Limite de continuação: `{limit}`'
-  disabled_detail: Defina `GEMINI_ENABLED=true` em `.env` para ativar a IA.
-  not_configured_detail: Adicione `GEMINI_API_KEY=your_key_here` ao `.env` ou ative o 9Router.
+  disabled_detail: Defina `NINE_ROUTER_ENABLED=true` em `.env` para ativar a IA.
+  not_configured_detail: Adicione `NINE_ROUTER_API_KEY=sk-your-key-here` ao `.env` ou ative o 9Router.
   footer: As explicações locais funcionam sem IA.
   user_enabled: 'IA para o usuário: **{status}**'
   user_setting_on: Ligado
@@ -95,8 +95,8 @@ ai_interpretation:
   model: Modelo
   footer: ID da Leitura
   generating: ✨ Gerando interpretação da IA...
-  failed: ⚠️ A interpretação da IA não pôde ser criada. As explicações locais ainda estão disponíveis acima.
-  truncated: ⚠️ A interpretação da IA ainda atingiu o limite de comprimento. Aumente `GEMINI_MAX_OUTPUT_TOKENS` ou `GEMINI_CONTINUATION_LIMIT` em `.env`.
+  silent_skip: '✨'
+  truncated: ⚠️ A interpretação da IA ainda atingiu o limite de comprimento. Aumente `NINE_ROUTER_MAX_OUTPUT_TOKENS`` em `.env`.
 language:
   current: '🌐 Seu idioma atual: **{lang_code}**
 

@@ -1,12 +1,13 @@
 # 🔮 Tarot Discord Bot
 
-A feature-rich Discord bot for tarot readings, daily card draws, and personal reflection. Built with Python and Discord.py, with full **multi-language support** (Indonesian, English, Portuguese, Spanish, German) and an **interactive dropdown UI**.
+A feature-rich Discord bot for tarot readings, daily card draws, and personal reflection. Built with Python and discord.py, with **5-language i18n** (Indonesian, English, Portuguese, Spanish, German), **interactive dropdown UI**, and **optional AI interpretation via 9Router**.
 
 ![Tarot Bot Banner](https://img.shields.io/badge/Tarot-Wisdom-purple)
 ![Python Version](https://img.shields.io/badge/python-3.10+-blue)
 ![Discord.py](https://img.shields.io/badge/discord.py-2.7-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Languages](https://img.shields.io/badge/i18n-5%20languages-orange)
+![AI Provider](https://img.shields.io/badge/AI-9Router%20only-blueviolet)
 
 ## ✨ Features
 
@@ -14,10 +15,11 @@ A feature-rich Discord bot for tarot readings, daily card draws, and personal re
 - **78 Authentic Tarot Cards** with detailed meanings, keywords, and orientation-aware interpretations
 - **11 Reading Spreads**: single, three, celtic, love, career, yesno, weekly, decision, selfcare, shadow, relationship
 - **Daily & Weekly Readings** with personal cooldowns
-- **AI Interpretations** (optional) via 9Router — pick your own model
+- **AI Interpretations** via **9Router** (OpenAI-compatible) — pick your own model
+- **Visual Spread Layouts** generated per reading (Celtic Cross, Love, Career, etc.)
 - **Reading History** stored per user with export/delete controls
 - **Personal Insights** based on reading patterns
-- **Visual Spread Layouts** generated per reading
+- **Silent AI fallback** — if 9Router is down, the bot keeps your reading (no scary error banner)
 
 ### 🌐 **Multi-Language Support**
 - 🇮🇩 Bahasa Indonesia (default)
@@ -26,27 +28,35 @@ A feature-rich Discord bot for tarot readings, daily card draws, and personal re
 - 🇪🇸 Español
 - 🇩🇪 Deutsch
 - Switch on the fly with `!language [code]`
-- YAML-based i18n with fallback chain (`target → en → id`)
+- YAML-driven i18n with fallback chain (`target → en → id`)
+- Parity-checked keys across all 5 locale files
 
 ### 🎨 **Interactive Discord UI**
 - **Dropdown menus** in `!help` and `!botinfo` — pick a category/feature to see details
-- **Hybrid commands** — support both `!prefix` and `/slash` from the same code
+- **Hybrid commands** — every command supports both `!prefix` and `/slash`
 - **Color-coded embeds** by spread type
 - **Ephemeral replies** for detail panels (only the user sees them)
 - **Pagination** for card lists
 
-### 🔧 **Technical Highlights**
-- Async-first architecture (discord.py 2.7 + aiohttp)
-- YAML-driven localization (zero hardcoded strings)
-- Optional **Firebase Firestore** sync for cross-device data
-- Pluggable AI backend — currently 9Router, swap by changing the URL
-- Privacy-first: users can `!exportdata` or `!deletedata` at any time
+### 🔒 **Admin-Only Commands**
+Six bot-admin commands are locked to a configurable allow-list (`BOT_ADMIN_IDS` in `.env`) **or** users with Discord Administrator permission:
+
+| Command | Purpose |
+|---------|---------|
+| `!syncdb` | Sync reading history to Firebase |
+| `!resetcooldown [user]` | Reset a user's daily/weekly cooldown |
+| `!firebase` | Show Firebase sync status |
+| `!botinfo` | Bot stats + interactive feature picker |
+| `!aimodels` | List available AI models |
+| `!serverstats` | Server-wide stats |
+
+Non-admins get a friendly localized message (not a generic traceback).
 
 ## 📋 Requirements
 
 - **Python 3.10+** (tested on 3.14)
-- Discord Bot Token
-- 9Router (or OpenAI-compatible endpoint) — *only if you want AI interpretations*
+- **Discord Bot Token**
+- **9Router** (or any OpenAI-compatible endpoint) — *only if you want AI interpretations*
 - Optional: Firebase project for cloud sync
 
 ## 🚀 Installation
@@ -74,34 +84,36 @@ Copy the template and fill in your secrets:
 cp .env.example .env
 ```
 
-Edit `.env` with at minimum:
+Minimum required:
 ```env
 # Required — your Discord bot token
 DISCORD_TOKEN=your_bot_token_here
 
-# AI interpretation (via 9Router, OpenAI-compatible)
-NINE_ROUTER_ENABLED=true
-NINE_ROUTER_BASE_URL=http://localhost:20128/v1
-NINE_ROUTER_API_KEY=
-GEMINI_MODEL=kr/claude-sonnet-4.5
-
-# Optional — direct Gemini fallback when 9Router is unavailable
-# (leave blank to disable fallback)
-GEMINI_API_KEY=
+# Comma-separated Discord user IDs allowed to run bot admin commands
+# (Discord Administrator role also bypasses the check)
+BOT_ADMIN_IDS=789065787276132392
 
 # Slash command sync at boot
 SYNC_SLASH_COMMANDS=true
 
 # id = Indonesian, en = English, pt = Portuguese, es = Spanish, de = German
 DEFAULT_LANGUAGE=id
-
-# Optional — Firebase cloud sync (see .env.example for full options)
-FIREBASE_ENABLED=false
-FIREBASE_CREDENTIALS_PATH=./firebase-credentials.json
 ```
 
-The prefix `!` is hardcoded (see `bot/bot.py`); the bot is hybrid (prefix + slash).
-All env vars are documented in `.env.example` — start there.
+Optional — AI interpretation:
+```env
+NINE_ROUTER_ENABLED=true
+NINE_ROUTER_BASE_URL=http://localhost:20128/v1
+NINE_ROUTER_API_KEY=your_9router_key_here
+NINE_ROUTER_MODEL=kr/claude-sonnet-4.5
+```
+
+Optional — Firebase cloud sync:
+```env
+FIREBASE_ENABLED=false
+FIREBASE_CREDENTIALS_PATH=./firebase-credentials.json
+FIREBASE_DATABASE_URL=https://your-project.firebaseio.com
+```
 
 > ⚠️ **Never commit `.env`** — it's already in `.gitignore`. Use `.env.example` for documentation.
 
@@ -123,11 +135,11 @@ tarot-bot-discord/
 ├── main.py                    # Thin entry point (load_dotenv + bot.run)
 ├── bot/                       # Main package
 │   ├── __init__.py            #   Package wiring, exports run() & bot
-│   ├── bot.py                 #   Bot instance, setup_hook, event handlers
-│   ├── cog.py                 #   TarotSystem cog — all 30 commands
-│   ├── ai.py                  #   GeminiTarotInterpreter (9Router + Gemini)
+│   ├── bot.py                 #   Bot instance, setup_hook, event handlers, i18n error path
+│   ├── cog.py                 #   TarotSystem cog — all 36 commands + admin check
+│   ├── ai.py                  #   NineRouterInterpreter (9Router-only + retry)
 │   ├── image_gen.py           #   CardImageGenerator (PIL rendering)
-│   ├── models.py              #   Enums, dataclasses, UserSettings
+│   ├── models.py              #   Enums, dataclasses, UserSettings, ServerSettings
 │   ├── views.py               #   Discord UI dropdowns (botinfo, help)
 │   ├── firebase_service.py    #   Firebase singleton + async wrappers
 │   ├── logging_webhook.py     #   Discord webhook log handler
@@ -141,15 +153,15 @@ tarot-bot-discord/
 │   ├── id.yml                 #   🇮🇩 Indonesian (default)
 │   ├── en.yml                 #   🇬🇧 English
 │   ├── pt.yml                 #   🇵🇹 Portuguese
-│   ├── es.yml                 #   🇪🇸 Spanish
-│   └── de.yml                 #   🇩🇪 German
+│   ├── es.yml                 #   🇪🇸 Español
+│   └── de.yml                 #   🇩🇪 Deutsch
 ├── data/
 │   └── tarot_cards.json       # 78-card Rider-Waite database
 ├── saves/
 │   ├── readings.json          # Local reading history
 │   ├── journals/              # Per-user journal entries
 │   └── settings/              # Per-user & per-server settings
-└── images/                    # Optional card artwork
+└── images/                    # Card artwork (78 jpg files, 768x1376)
 ```
 
 ## 🌍 Adding a New Language
@@ -159,7 +171,6 @@ The bot uses a simple YAML-driven i18n system. To add a 6th language (e.g., Fren
 1. **Add the locale code to `bot_i18n.py`:**
    ```python
    SUPPORTED_LOCALES = ["id", "en", "pt", "es", "de", "fr"]
-   DEFAULT_LOCALE = "id"
    ```
 
 2. **Copy `en.yml` → `locales/fr.yml`** and translate every value.
@@ -168,22 +179,26 @@ The bot uses a simple YAML-driven i18n system. To add a 6th language (e.g., Fren
 
 4. **Add `get_locale_name("fr")` → `"Français"`** in `bot_i18n.py`.
 
-5. **Verify parity:**
+5. **Verify parity** — the script below must report ✅ for every locale:
    ```bash
-   python -c "import yaml; from pathlib import Path
+   python -c "
+   import yaml
+   from pathlib import Path
+   locales = ['id','en','pt','es','de']
    keys = {l: set(yaml.safe_load(Path(f'locales/{l}.yml').read_text()).keys())
-           for l in ['id','en','pt','es','de','fr']}
-   print('Keys per locale:', {k: len(v) for k,v in keys.items()})
+           for l in locales}
    base = keys['id']
    for l, v in keys.items():
-       print(f'{l}: {\"✅ matches\" if v == base else f\"❌ diff: {base ^ v}\"}')"
+       print(f'{l}: {\"✅ matches\" if v == base else f\"❌ diff: {base ^ v}\"}')
+   "
    ```
 
 ## 🎮 Commands
 
-The bot registers **hybrid commands** — every command below works with **both** `!prefix` and `/slash`.
+The bot registers **hybrid commands** — every command below works with both `!prefix` and `/slash`.
 
-### 🔮 **Main Commands**
+### 🔮 **Main Commands** (public)
+
 | Command | Description |
 |---------|-------------|
 | `!tarot [spread] [question]` | Get a tarot reading |
@@ -197,15 +212,29 @@ The bot registers **hybrid commands** — every command below works with **both*
 | `!journal [add/list]` | Personal reflection notes |
 | `!exportdata` | Export your data (JSON) |
 | `!deletedata confirm` | Delete your data |
+| `!feedback [message]` | Send feedback to the bot owner |
+| `!donate` | Support the project |
+| `!source` | Source code & license info |
 | `!help` | Interactive help menu (dropdown) |
-| `!botinfo` | Bot stats + interactive feature picker (dropdown) |
 | `!language [code]` | Switch language (`id`, `en`, `pt`, `es`, `de`) |
 | `!mode [mode]` | Switch reading style (`simple`, `deep`, `gentle`, `direct`) |
-| `!aimodels` | List available AI models |
 | `!aimodel [model_id]` | Pick AI model for interpretation |
 | `!aion` / `!aioff` | Toggle AI on/off |
 | `!aistatus` | Show AI status |
+| `!reset_settings` | Reset your settings to defaults |
+| `!privacy` | Privacy policy |
+| `!userinfo [@user]` | Show reading stats for a user |
+
+### 🔒 **Admin Commands** (BOT_ADMIN_IDS or Administrator role)
+
+| Command | Description |
+|---------|-------------|
+| `!syncdb` | Sync reading history to Firebase |
+| `!resetcooldown [user]` | Reset a user's daily/weekly cooldown |
 | `!firebase` | Show Firebase sync status |
+| `!botinfo` | Bot stats + interactive feature picker |
+| `!aimodels` | List available AI models |
+| `!serverstats` | Server-wide stats |
 
 ### 📊 **Spread Types**
 
@@ -213,9 +242,9 @@ The bot registers **hybrid commands** — every command below works with **both*
 |--------|------:|----------|
 | `single` | 1 | Quick guidance |
 | `three` | 3 | Past / Present / Future |
+| `yesno` | 3 | Yes / No guidance |
 | `love` | 6 | Relationship insights |
 | `career` | 6 | Work & success |
-| `yesno` | 3 | Yes / No guidance |
 | `weekly` | 5 | Weekly overview |
 | `decision` | 5 | Decision help |
 | `selfcare` | 5 | Self-care reflection |
@@ -226,9 +255,9 @@ The bot registers **hybrid commands** — every command below works with **both*
 ### 🎴 **Card Categories**
 `major` (22) · `wands` (14) · `cups` (14) · `swords` (14) · `pentacles` (14) · `all` (78)
 
-## 🤖 AI Interpretation (Optional)
+## 🤖 AI Interpretation
 
-The bot supports **any OpenAI-compatible endpoint**. By default it's wired to **9Router** (an OpenAI-compatible proxy for multiple providers).
+The bot supports **any OpenAI-compatible endpoint** via 9Router. There is **no fallback provider** — if 9Router is unreachable, the bot **silently** omits the AI interpretation and shows your local card explanations instead. No error banner appears.
 
 ### Switching providers
 
@@ -243,10 +272,19 @@ Point `NINE_ROUTER_BASE_URL` and `NINE_ROUTER_API_KEY` at any OpenAI-compatible 
 
 Users pick the model with `!aimodel [model_id]` and list available models with `!aimodels`.
 
-To fall back to direct Gemini API when 9Router is down, set both `NINE_ROUTER_API_KEY` (primary) and `GEMINI_API_KEY` (fallback).
+### Resilience settings
+
+| Env var | Default | What it does |
+|---------|--------:|--------------|
+| `NINE_ROUTER_API_TIMEOUT` | 60 | Per-request timeout (seconds) |
+| `NINE_ROUTER_MAX_OUTPUT_TOKENS` | 4000 | Max output tokens per response |
+| `NINE_ROUTER_TEMPERATURE` | 0.75 | Sampling temperature |
+| `NINE_ROUTER_TOP_P` | 0.9 | Nucleus sampling |
+| `NINE_ROUTER_MAX_RETRIES` | 3 | Silent retries before fallback |
+| `NINE_ROUTER_RETRY_BACKOFF` | 1.0 | Linear backoff between retries (seconds) |
 
 ### Concurrency limit
-Up to **5 AI calls run in parallel** (`AI_CALL_SEMAPHORE = 5`). Tweak `AI_CALL_SEMAPHORE` in `bot/ai.py` if your endpoint can handle more.
+Up to **5 AI calls run in parallel** (`AI_CALL_SEMAPHORE = 5` in `bot/ai.py`). Tweak the constant if your endpoint can handle more.
 
 ## 🔥 Firebase (Optional)
 
@@ -271,6 +309,7 @@ Without Firebase, all data stays in local JSON files under `saves/`.
 - ✅ **Discord tokens** and **API keys** live only in `.env` (gitignored)
 - ✅ **`members` privileged intent is disabled** — bot only requires `message_content`
 - ✅ **Local-first** storage; cloud sync is opt-in
+- ✅ **Admin-gated commands** for sensitive operations (sync, cooldowns, internal stats)
 
 ## ⚠️ Discord Privileged Intents
 
@@ -287,14 +326,17 @@ At **10,000+ users**, Discord requires verification for the `message_content` pr
 
 **While waiting for verification**, your options:
 - Keep using slash commands (`/tarot`) — works without verification
-- Note: the prefix is currently hardcoded to `!` in `bot/bot.py`. If you need to disable prefix commands entirely, edit `command_prefix="!"` (e.g. set to an empty sentinel) before deploying
+- The prefix is hardcoded to `!` in `bot/bot.py`; if you need to disable prefix commands entirely, edit `command_prefix="!"` (e.g. set to an empty sentinel) before deploying
 
 ## 🛠️ Development
 
 ### Running syntax / smoke tests
 ```bash
 # Parse all source files (cheap, no imports)
-python -c "import ast; [ast.parse(open(f).read()) for f in ['main.py', 'bot/__init__.py', 'bot/bot.py', 'bot/cog.py', 'bot/ai.py', 'bot/image_gen.py', 'bot/models.py', 'bot/views.py', 'bot/config.py', 'bot/utils.py', 'bot/firebase_service.py', 'bot/logging_webhook.py']]; print('All files parse OK')"
+python -m compileall -q main.py bot bot_i18n.py check_cards.py && echo "Compile OK"
+
+# Verify card database (78 cards, 78 images)
+python check_cards.py
 
 # Full import smoke test (loads bot + cog)
 python -c "from bot import bot, run; print('Bot loads OK')"
@@ -317,7 +359,7 @@ Then add `mycmd.greeting` to all 5 locale files.
 - **i18n first** — every user-visible string lives in `locales/*.yml`, no hardcoded messages in `bot/cog.py`
 - **Hybrid commands only** — every command should be `@commands.hybrid_command(...)`
 - **Avoid shadowing `_`** — it's the `t()` alias. Use `_server_settings` for unused tuple unpacks
-- **Defensive `.format()`** — only call `.format()` after checking for `None` placeholders
+- **Silent failure** — AI is a "nice-to-have" layer. If anything goes wrong, swallow gracefully and keep the local card explanations visible
 
 ## 📊 Capacity & Scaling
 
@@ -346,6 +388,11 @@ If you start hitting limits, the **first refactor** should be moving `readings.j
 - `!aistatus` to check configuration
 - Verify `NINE_ROUTER_BASE_URL` is reachable (`curl http://localhost:20128/v1/models`)
 - Check `tarot_bot.log` for HTTP errors
+- If 9Router is down, this is **expected** — the bot stays silent rather than showing an error
+
+**"Command ini hanya untuk admin bot" message:**
+- Add your Discord user ID to `BOT_ADMIN_IDS` in `.env`, or
+- Get a server role with Discord Administrator permission
 
 **`readings.json` getting huge:**
 - Expected at high traffic — see Capacity section above

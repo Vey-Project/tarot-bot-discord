@@ -23,7 +23,7 @@ import discord
 import requests
 from discord.ext import commands
 
-from .ai import GeminiTarotInterpreter
+from .ai import NineRouterInterpreter
 from .changelog import latest_releases
 from .config import (
     AUTHOR_NAME,
@@ -35,13 +35,13 @@ from .config import (
     FIREBASE_AVAILABLE,
     FIREBASE_DATABASE_URL,
     FIREBASE_STORAGE_BUCKET,
-    GEMINI_API_TIMEOUT,
-    GEMINI_CONTINUATION_LIMIT,
-    GEMINI_ENABLED,
-    GEMINI_MAX_OUTPUT_TOKENS,
-    GEMINI_MODEL,
-    GEMINI_TEMPERATURE,
-    GEMINI_TOP_P,
+    NINE_ROUTER_API_KEY,
+    NINE_ROUTER_API_TIMEOUT,
+    NINE_ROUTER_ENABLED,
+    NINE_ROUTER_MAX_OUTPUT_TOKENS,
+    NINE_ROUTER_MODEL,
+    NINE_ROUTER_TEMPERATURE,
+    NINE_ROUTER_TOP_P,
     JOURNALS_DIR,
     LICENSE_NAME,
     NINE_ROUTER_BASE_URL,
@@ -110,13 +110,12 @@ class TarotSystem(commands.Cog):
         # Pre-populated by _load_user_settings / _load_server_settings.
         self._user_settings_cache: Dict[int, UserSettings] = {}
         self._server_settings_cache: Dict[int, ServerSettings] = {}
-        self.ai_interpreter = GeminiTarotInterpreter(
-            enabled=GEMINI_ENABLED,
-            timeout=GEMINI_API_TIMEOUT,
-            max_output_tokens=GEMINI_MAX_OUTPUT_TOKENS,
-            continuation_limit=GEMINI_CONTINUATION_LIMIT,
-            temperature=GEMINI_TEMPERATURE,
-            top_p=GEMINI_TOP_P
+        self.ai_interpreter = NineRouterInterpreter(
+            enabled=NINE_ROUTER_ENABLED,
+            timeout=NINE_ROUTER_API_TIMEOUT,
+            max_output_tokens=NINE_ROUTER_MAX_OUTPUT_TOKENS,
+            temperature=NINE_ROUTER_TEMPERATURE,
+            top_p=NINE_ROUTER_TOP_P,
         )
         self._load_saved_data()
         self._load_user_settings()
@@ -278,20 +277,37 @@ class TarotSystem(commands.Cog):
 
         lbl = {
             'generating': _("ai_interpretation.generating", lang=reading.language),
-            'failed': _("ai_interpretation.failed", lang=reading.language),
         }
 
         status_msg = await ctx.send(lbl['generating'])
         ai_result = await self.ai_interpreter.generate_interpretation(reading)
 
         if not ai_result:
-            await status_msg.edit(content=lbl['failed'])
+            # Silent fallback: 9Router is down or returned garbage. Don't
+            # show the user an error banner — just delete the "generating"
+            # status and let the local card explanations carry the reading.
+            try:
+                await status_msg.delete()
+            except discord.NotFound:
+                pass
+            except discord.HTTPException:
+                # Fall back to a quiet one-line placeholder so the
+                # placeholder doesn't sit there as "still generating...".
+                try:
+                    await status_msg.edit(
+                        content=_("ai_interpretation.silent_skip", lang=reading.language)
+                    )
+                except (discord.NotFound, discord.HTTPException):
+                    pass
             return
 
         ai_text, was_truncated, model_label = ai_result
         embeds = self._ai_interpretation_embeds(reading, ai_text, model_label)
         if not embeds:
-            await status_msg.edit(content=lbl['failed'])
+            try:
+                await status_msg.delete()
+            except (discord.NotFound, discord.HTTPException):
+                pass
             return
 
         # Edit the status message to become the first AI embed to avoid
@@ -924,8 +940,8 @@ class TarotSystem(commands.Cog):
             return
 
         if model_id.lower() in ['reset', 'default']:
-            user_settings.set_ai_model(GEMINI_MODEL)
-            await ctx.send(_("aimodel.reset", lang=lang, model=GEMINI_MODEL))
+            user_settings.set_ai_model(NINE_ROUTER_MODEL)
+            await ctx.send(_("aimodel.reset", lang=lang, model=NINE_ROUTER_MODEL))
             return
 
         user_settings.set_ai_model(model_id)
@@ -2319,7 +2335,7 @@ class TarotSystem(commands.Cog):
 
     @commands.hybrid_command(
         name='aistatus',
-        description='✨ Cek status AI interpreter (9Router/Gemini)'
+        description='✨ Cek status AI interpreter (9Router)'
     )
     async def ai_status_command(self, ctx):
         user_settings, _server_settings = self._get_settings(ctx.author.id, ctx.guild.id if ctx.guild else None)
@@ -2327,16 +2343,15 @@ class TarotSystem(commands.Cog):
 
         if self.ai_interpreter.is_configured():
             status = _("ai_status.enabled", lang=lang)
-            mode = "9Router" if NINE_ROUTER_ENABLED else "Gemini"
+            mode = "9Router"
             details = _("ai_status.enabled_detail", lang=lang,
                 mode=mode,
                 model=user_settings.get_ai_model(),
                 timeout=self.ai_interpreter.timeout,
                 tokens=self.ai_interpreter.max_output_tokens,
-                limit=self.ai_interpreter.continuation_limit
             )
             color = 0x2ecc71
-        elif not GEMINI_ENABLED:
+        elif not NINE_ROUTER_ENABLED:
             status = _("ai_status.disabled", lang=lang)
             details = _("ai_status.disabled_detail", lang=lang)
             color = 0xf39c12

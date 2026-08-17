@@ -54,16 +54,18 @@ def _env_int_set(name: str, default: set[int]) -> set[int]:
 
 
 # ============================================================
-# GEMINI / 9ROUTER
+# 9ROUTER (sole AI gateway)
 # ============================================================
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-GEMINI_MODEL = os.getenv("GEMINI_MODEL", "kr/claude-sonnet-4.5")
-GEMINI_ENABLED = _env_bool("GEMINI_ENABLED", True)
-GEMINI_API_TIMEOUT = _env_float("GEMINI_API_TIMEOUT", 30.0)
-GEMINI_MAX_OUTPUT_TOKENS = _env_int("GEMINI_MAX_OUTPUT_TOKENS", 8192)
-GEMINI_CONTINUATION_LIMIT = _env_int("GEMINI_CONTINUATION_LIMIT", 3)
-GEMINI_TEMPERATURE = _env_float("GEMINI_TEMPERATURE", 0.75)
-GEMINI_TOP_P = _env_float("GEMINI_TOP_P", 0.9)
+NINE_ROUTER_ENABLED = _env_bool("NINE_ROUTER_ENABLED", False)
+NINE_ROUTER_BASE_URL = os.getenv("NINE_ROUTER_BASE_URL", "http://localhost:20128/v1")
+NINE_ROUTER_API_KEY = os.getenv("NINE_ROUTER_API_KEY", "")
+NINE_ROUTER_MODEL = os.getenv("NINE_ROUTER_MODEL", "kr/claude-sonnet-4.5")
+NINE_ROUTER_API_TIMEOUT = _env_float("NINE_ROUTER_API_TIMEOUT", 60.0)
+NINE_ROUTER_MAX_OUTPUT_TOKENS = _env_int("NINE_ROUTER_MAX_OUTPUT_TOKENS", 4000)
+NINE_ROUTER_TEMPERATURE = _env_float("NINE_ROUTER_TEMPERATURE", 0.75)
+NINE_ROUTER_TOP_P = _env_float("NINE_ROUTER_TOP_P", 0.9)
+NINE_ROUTER_MAX_RETRIES = _env_int("NINE_ROUTER_MAX_RETRIES", 3)
+NINE_ROUTER_RETRY_BACKOFF = _env_float("NINE_ROUTER_RETRY_BACKOFF", 1.0)
 
 # Discord log webhook
 DISCORD_LOG_WEBHOOK_URL = os.getenv("DISCORD_LOG_WEBHOOK_URL", "")
@@ -79,11 +81,6 @@ DONATE_MESSAGE = os.getenv("DONATE_MESSAGE", "")
 REPO_URL = os.getenv("REPO_URL", "https://github.com/Vey-Project/tarot-bot-discord")
 LICENSE_NAME = os.getenv("LICENSE_NAME", "MIT License")
 AUTHOR_NAME = os.getenv("AUTHOR_NAME", "vv3yy")
-
-# 9Router (AI gateway used in front of Gemini)
-NINE_ROUTER_ENABLED = _env_bool("NINE_ROUTER_ENABLED", False)
-NINE_ROUTER_BASE_URL = os.getenv("NINE_ROUTER_BASE_URL", "http://localhost:20128/v1")
-NINE_ROUTER_API_KEY = os.getenv("NINE_ROUTER_API_KEY", "sk-9router-default-key")
 
 # Bot behavior
 SYNC_SLASH_COMMANDS = _env_bool("SYNC_SLASH_COMMANDS", True)

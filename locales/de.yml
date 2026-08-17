@@ -84,8 +84,8 @@ ai_status:
     Maximale Ausgabe-Tokens: `{tokens}`
 
     Fortsetzungslimit: `{limit}`'
-  disabled_detail: Setze `GEMINI_ENABLED=true` in `.env`, um die KI zu aktivieren.
-  not_configured_detail: Füge `GEMINI_API_KEY=your_key_here` zu `.env` hinzu oder aktiviere 9Router.
+  disabled_detail: Setze `NINE_ROUTER_ENABLED=true` in `.env`, um die KI zu aktivieren.
+  not_configured_detail: Füge `NINE_ROUTER_API_KEY=sk-your-key-here` zu `.env` hinzu oder aktiviere 9Router.
   footer: Lokale Erklärungen funktionieren ohne KI.
   user_enabled: 'KI für Benutzer: **{status}**'
   user_setting_on: Ein
@@ -95,8 +95,8 @@ ai_interpretation:
   model: Modell
   footer: Legungs-ID
   generating: ✨ KI-Deutung wird erstellt...
-  failed: ⚠️ KI-Deutung konnte nicht erstellt werden. Lokale Erklärungen sind oben weiterhin verfügbar.
-  truncated: ⚠️ KI-Deutung hat das Ausgabelängenlimit erreicht. Erhöhe `GEMINI_MAX_OUTPUT_TOKENS` oder `GEMINI_CONTINUATION_LIMIT` in `.env`.
+  silent_skip: '✨'
+  truncated: ⚠️ KI-Deutung hat das Ausgabelängenlimit erreicht. Erhöhe `NINE_ROUTER_MAX_OUTPUT_TOKENS`` in `.env`.
 language:
   current: '🌐 Deine aktuelle Sprache: **{lang_code}**
 

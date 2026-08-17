@@ -10,8 +10,8 @@ from discord.ext import commands
 
 from .cog import TarotSystem
 from .config import (
-    GEMINI_MODEL,
     NINE_ROUTER_ENABLED,
+    NINE_ROUTER_MODEL,
     SYNC_SLASH_COMMANDS,
     TAROT_CARDS,
 )
@@ -92,7 +92,7 @@ async def on_ready():
     print(f"🃏 {len(SPREADS)} spread types available")
     print("🌐 Languages: Indonesian, English")
     print("🎭 Modes: simple, deep, gentle, direct")
-    print(f'🤖 AI: {"9Router" if NINE_ROUTER_ENABLED else "Gemini"} ({GEMINI_MODEL})')
+    print(f'🤖 AI: {"9Router" if NINE_ROUTER_ENABLED else "disabled"} ({NINE_ROUTER_MODEL})')
     print(f'✨ Slash commands: {"sync enabled" if SYNC_SLASH_COMMANDS else "sync disabled"}')
     print(f'☁️ Firebase: {"enabled" if firebase_service.is_enabled() else "disabled"}')
     print(f'{"=" * 50}\n')
@@ -190,7 +190,7 @@ def main():
         print("\n📝 Create a file named '.env' in the same directory with:")
         print("DISCORD_TOKEN=your_bot_token_here")
         print("NINE_ROUTER_ENABLED=true")
-        print("GEMINI_MODEL=kr/claude-sonnet-4.5")
+        print("NINE_ROUTER_MODEL=kr/claude-sonnet-4.5")
         print("\n🔗 Get token from: https://discord.com/developers/applications")
         return
 

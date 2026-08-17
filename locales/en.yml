@@ -84,8 +84,8 @@ ai_status:
     Max output tokens: `{tokens}`
 
     Continuation limit: `{limit}`'
-  disabled_detail: Set `GEMINI_ENABLED=true` in `.env` to enable AI.
-  not_configured_detail: Add `GEMINI_API_KEY=your_key_here` to `.env` or enable 9Router.
+  disabled_detail: Set `NINE_ROUTER_ENABLED=true` in `.env` to enable AI.
+  not_configured_detail: Add `NINE_ROUTER_API_KEY=sk-your-key-here` to `.env` or enable 9Router.
   footer: Local explanations work without AI.
   user_enabled: 'AI for user: **{status}**'
   user_setting_on: 'On'
@@ -95,8 +95,8 @@ ai_interpretation:
   model: Model
   footer: Reading ID
   generating: ✨ Generating AI interpretation...
-  failed: ⚠️ AI interpretation couldn't be created. Local explanations are still available above.
-  truncated: ⚠️ AI interpretation still hit the output length limit. Increase `GEMINI_MAX_OUTPUT_TOKENS` or `GEMINI_CONTINUATION_LIMIT` in `.env`.
+  silent_skip: '✨'
+  truncated: ⚠️ AI interpretation still hit the output length limit. Increase `NINE_ROUTER_MAX_OUTPUT_TOKENS` in `.env`.
 language:
   current: '🌐 Your current language: **{lang_code}**
 

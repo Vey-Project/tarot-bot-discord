@@ -18,8 +18,8 @@ from PIL import Image, ImageDraw, ImageFont
 from .config import (
     DEFAULT_LANGUAGE,
     DEFAULT_READING_MODE,
-    GEMINI_ENABLED,
-    GEMINI_MODEL,
+    NINE_ROUTER_ENABLED,
+    NINE_ROUTER_MODEL,
     SAVES_DIR,
     SETTINGS_DIR,
 )
@@ -197,8 +197,8 @@ class UserSettings:
         self.settings_path = SETTINGS_DIR / f"user_{user_id}.json"
         self.language = DEFAULT_LANGUAGE
         self.reading_mode = DEFAULT_READING_MODE
-        self.ai_enabled = GEMINI_ENABLED
-        self.ai_model = GEMINI_MODEL
+        self.ai_enabled = NINE_ROUTER_ENABLED
+        self.ai_model = NINE_ROUTER_MODEL
         self._on_change = on_change
         self._load()
 
@@ -209,8 +209,8 @@ class UserSettings:
                     data = json.load(f)
                 self.language = data.get("language", DEFAULT_LANGUAGE)
                 self.reading_mode = data.get("reading_mode", DEFAULT_READING_MODE)
-                self.ai_enabled = data.get("ai_enabled", GEMINI_ENABLED)
-                self.ai_model = data.get("ai_model", GEMINI_MODEL)
+                self.ai_enabled = data.get("ai_enabled", NINE_ROUTER_ENABLED)
+                self.ai_model = data.get("ai_model", NINE_ROUTER_MODEL)
             except Exception as e:
                 logger.error(f"Error loading user settings: {e}")
 
@@ -256,14 +256,14 @@ class UserSettings:
         return False
 
     def is_ai_enabled(self) -> bool:
-        return self.ai_enabled and GEMINI_ENABLED
+        return self.ai_enabled and NINE_ROUTER_ENABLED
 
     def set_ai_enabled(self, enabled: bool):
         self.ai_enabled = enabled
         self.save()
 
     def get_ai_model(self) -> str:
-        return self.ai_model or GEMINI_MODEL
+        return self.ai_model or NINE_ROUTER_MODEL
 
     def set_ai_model(self, model: str) -> bool:
         self.ai_model = model
@@ -279,7 +279,7 @@ class ServerSettings:
         self.settings_path = SETTINGS_DIR / f"server_{guild_id}.json"
         self.prefix = "!"
         self.language = DEFAULT_LANGUAGE
-        self.ai_enabled = GEMINI_ENABLED
+        self.ai_enabled = NINE_ROUTER_ENABLED
         self.reading_channel = None
         self.daily_channel = None
         self._on_change = on_change
@@ -292,7 +292,7 @@ class ServerSettings:
                     data = json.load(f)
                 self.prefix = data.get("prefix", "!")
                 self.language = data.get("language", DEFAULT_LANGUAGE)
-                self.ai_enabled = data.get("ai_enabled", GEMINI_ENABLED)
+                self.ai_enabled = data.get("ai_enabled", NINE_ROUTER_ENABLED)
                 self.reading_channel = data.get("reading_channel")
                 self.daily_channel = data.get("daily_channel")
             except Exception as e:
@@ -322,7 +322,7 @@ class ServerSettings:
         return self.language
 
     def is_ai_enabled(self) -> bool:
-        return self.ai_enabled and GEMINI_ENABLED
+        return self.ai_enabled and NINE_ROUTER_ENABLED
 
 
 # ============================================================
