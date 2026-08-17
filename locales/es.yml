@@ -1,3 +1,5 @@
+errors:
+  admin_only: '🔒 Este comando está restringido a los administradores del bot. Tu ID: `{user_id}`. Contacta al propietario del bot si crees que es un error.'
 tarot:
   question_prompt: ¿Qué te gustaría reflexionar hoy?
   spread_prompt: Elige un spread de tarot

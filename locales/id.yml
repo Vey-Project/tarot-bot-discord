@@ -1,3 +1,5 @@
+errors:
+  admin_only: '🔒 Command ini hanya untuk admin bot. User ID kamu: `{user_id}`. Hubungi owner bot kalau merasa ini keliru.'
 tarot:
   question_prompt: Mau refleksi soal apa hari ini?
   spread_prompt: Pilih spread tarot

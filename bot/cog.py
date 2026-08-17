@@ -187,7 +187,10 @@ class TarotSystem(commands.Cog):
         translation that the locale loader can't produce.
         """
         try:
-            user_settings, _ = self._get_settings(
+            # NOTE: unpack target is named `_server_settings` (not `_`) to
+            # avoid shadowing the module-level `t as _` translation function
+            # imported at the top of this file.
+            user_settings, _server_settings = self._get_settings(
                 ctx.author.id,
                 ctx.guild.id if ctx.guild else None,
             )
@@ -834,6 +837,7 @@ class TarotSystem(commands.Cog):
         description='📋 Lihat daftar model AI yang tersedia melalui 9Router',
         aliases=['models']
     )
+    @commands.check(is_bot_admin)
     async def aimodels_command(self, ctx):
         """📋 Show available AI models from 9Router"""
         user_settings, _server_settings = self._get_settings(ctx.author.id, ctx.guild.id if ctx.guild else None)
@@ -966,22 +970,11 @@ class TarotSystem(commands.Cog):
 
         spread_info = SPREADS[spread_type]
 
-        if spread_info["cards"] > 5:
-            confirm_msg = await ctx.send(_("tarot.spread_confirm", lang=language, count=spread_info['cards']))
-            await confirm_msg.add_reaction("✅")
-
-            def check(reaction, user):
-                return (
-                    user == ctx.author and
-                    str(reaction.emoji) == "✅" and
-                    reaction.message.id == confirm_msg.id
-                )
-
-            try:
-                await self.bot.wait_for('reaction_add', timeout=30.0, check=check)
-            except asyncio.TimeoutError:
-                await confirm_msg.edit(content=_("tarot.spread_timeout", lang=language))
-                return
+        # Large spreads (>5 cards, e.g. relationship/career/love = 6,
+        # celtic = 10) previously asked the user to react ✅ within 30 s to
+        # confirm. That prompt made slash commands hang until timeout and
+        # surfaced as `HybridCommandError` on every large-spread reading.
+        # Skip straight to the draw — cooldowns still gate spam.
 
         async with ctx.typing():
             cards = self.draw_cards(spread_info["cards"])
@@ -2262,6 +2255,7 @@ class TarotSystem(commands.Cog):
         name='botinfo',
         description='🤖 Lihat informasi tentang bot tarot'
     )
+    @commands.check(is_bot_admin)
     async def botinfo_command(self, ctx):
         user_settings, _server_settings = self._get_settings(ctx.author.id, ctx.guild.id if ctx.guild else None)
         language = user_settings.get_lang()
@@ -2368,6 +2362,7 @@ class TarotSystem(commands.Cog):
         name='firebase',
         description='☁️ Cek status koneksi Firebase'
     )
+    @commands.check(is_bot_admin)
     async def firebase_status_command(self, ctx):
         user_settings, _server_settings = self._get_settings(ctx.author.id, ctx.guild.id if ctx.guild else None)
         language = user_settings.get_lang()
@@ -2507,7 +2502,11 @@ class TarotSystem(commands.Cog):
     async def profile_command(self, ctx):
         """Show the caller's current settings + reading count in a single view."""
         language = self._resolve_lang(ctx)
-        user_settings, _ = self._get_settings(
+        # NOTE: must use `_server_settings` (not bare `_`) — see top-of-file
+        # import `from bot_i18n import ... t as _`. Shadowing `_` with the
+        # second tuple element (`None` in DMs) breaks every `_(...)` call
+        # below and produces `TypeError: 'NoneType' object is not callable`.
+        user_settings, _server_settings = self._get_settings(
             ctx.author.id,
             ctx.guild.id if ctx.guild else None,
         )
@@ -2554,6 +2553,7 @@ class TarotSystem(commands.Cog):
         name='serverstats',
         description='📊 Lihat statistik tarot di server ini'
     )
+    @commands.check(is_bot_admin)
     async def serverstats_command(self, ctx):
         """Per-guild stats. Falls back to bot-wide totals when DM is used."""
         language = self._resolve_lang(ctx)
@@ -3280,3 +3280,42 @@ class TarotSystem(commands.Cog):
 
         view = HelpView(language, self)
         await ctx.send(embed=embed, view=view)
+
+    async def cog_command_error(self, ctx, error):
+        """Slash/app-command error handler scoped to this cog.
+
+        Prefix command errors still go through ``bot.bot.on_command_error``;
+        this method catches ``HybridCommandError`` and the wrapped
+        ``CheckFailure`` raised when ``@commands.check(is_bot_admin)`` denies
+        a slash invocation. Without it, the user just sees ``HybridCommand
+        Error: ... CheckFailure: ...``.
+        """
+        # Unwrap HybridCommandError to the underlying cause.
+        original = error
+        if isinstance(error, commands.HybridCommandError):
+            original = getattr(error, "original", error)
+
+        if isinstance(original, commands.CheckFailure):
+            author_id = getattr(getattr(ctx, "author", None), "id", None)
+            try:
+                language = self._resolve_lang(ctx)
+            except Exception:
+                language = "id"
+            try:
+                msg = _("errors.admin_only", lang=language, user_id=author_id)
+            except Exception:
+                msg = (
+                    f"🔒 Command ini hanya untuk admin bot. "
+                    f"User ID kamu: `{author_id}`."
+                )
+            try:
+                await ctx.send(msg, ephemeral=True)
+            except (discord.NotFound, discord.HTTPException):
+                try:
+                    await ctx.send(msg)
+                except discord.NotFound:
+                    pass
+            return
+
+        # Anything else: re-raise so the global handler can decide.
+        raise error

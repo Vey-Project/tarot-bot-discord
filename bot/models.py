@@ -6,11 +6,14 @@ Discord or HTTP imports so it can be reused in tests.
 
 from __future__ import annotations
 
+import io
 import json
 import logging
 from datetime import datetime
 from enum import Enum
 from typing import Callable, Dict, List, Optional
+
+from PIL import Image, ImageDraw, ImageFont
 
 from .config import (
     DEFAULT_LANGUAGE,
@@ -569,6 +572,133 @@ class TarotReading:
             embed.set_footer(text=f"{label['footer']}: {self.reading_id[:8]}")
             embeds.append(embed)
         return embeds
+
+    def generate_spread_image(self) -> Optional[io.BytesIO]:
+        """Render a grid layout PNG of the drawn cards.
+
+        Restored from the pre-refactor ``main.py`` (was dropped when the
+        ``TarotSystem`` cog moved into ``bot/cog.py``). Without this method,
+        every multi-card reading crashed with ``AttributeError`` which the
+        global error handler reported as ``HybridCommandError`` /
+        ``💥 An unexpected error occurred``.
+        """
+        if len(self.cards) <= 1:
+            return None
+
+        try:
+            img_size = 800
+            padding = 50
+            card_width = 150
+            card_height = 250
+
+            layout = self._spread_info.get("layout", [])
+            if not layout:
+                return None
+
+            x_vals = [pos[0] for pos in layout]
+            y_vals = [pos[1] for pos in layout]
+            min_x, max_x = min(x_vals), max(x_vals)
+            min_y, max_y = min(y_vals), max(y_vals)
+
+            grid_width = max_x - min_x + 1
+            grid_height = max_y - min_y + 1
+
+            cell_width = (img_size - 2 * padding) // max(grid_width, grid_height)
+            cell_height = cell_width * card_height // card_width
+
+            img = Image.new("RGB", (img_size, img_size), (25, 25, 40))
+            draw = ImageDraw.Draw(img)
+
+            for x in range(min_x, max_x + 2):
+                x_pos = padding + (x - min_x) * cell_width
+                draw.line(
+                    [(x_pos, padding), (x_pos, img_size - padding)],
+                    fill=(50, 50, 70),
+                    width=2,
+                )
+
+            for y in range(min_y, max_y + 2):
+                y_pos = padding + (y - min_y) * cell_height
+                draw.line(
+                    [(padding, y_pos), (img_size - padding, y_pos)],
+                    fill=(50, 50, 70),
+                    width=2,
+                )
+
+            suit_colors = {
+                "wands": (220, 120, 0),
+                "cups": (0, 100, 220),
+                "swords": (180, 180, 200),
+                "pentacles": (0, 160, 0),
+            }
+
+            def _color_for(card) -> tuple:
+                return (
+                    suit_colors.get(card.suit, (120, 0, 220))
+                    if card.suit
+                    else (220, 180, 0)
+                )
+
+            for i, (card, (grid_x, grid_y)) in enumerate(zip(self.cards, layout)):
+                x = padding + (grid_x - min_x) * cell_width + cell_width // 2
+                y = padding + (grid_y - min_y) * cell_height + cell_height // 2
+
+                card_rect = [
+                    x - card_width // 2,
+                    y - card_height // 2,
+                    x + card_width // 2,
+                    y + card_height // 2,
+                ]
+
+                color = _color_for(card)
+
+                draw.rounded_rectangle(
+                    card_rect, radius=15, fill=color, outline=(255, 255, 255), width=2
+                )
+                draw.text(
+                    (x, y - 30),
+                    str(i + 1),
+                    fill=(255, 255, 255),
+                    font=ImageFont.load_default(20),
+                    anchor="mm",
+                )
+
+                name_parts = card.name.split()
+                short_name = name_parts[-1][:8] if len(name_parts) > 1 else card.name[:8]
+                draw.text(
+                    (x, y),
+                    short_name,
+                    fill=(255, 255, 255),
+                    font=ImageFont.load_default(14),
+                    anchor="mm",
+                )
+
+                orient_symbol = "R" if card.is_reversed else "U"
+                draw.text(
+                    (x, y + 30),
+                    orient_symbol,
+                    fill=(255, 255, 200),
+                    font=ImageFont.load_default(16),
+                    anchor="mm",
+                )
+
+            spread_name = self._get_text(self._spread_info["name"])
+            draw.text(
+                (img_size // 2, 20),
+                f"{spread_name} Spread",
+                fill=(255, 255, 255),
+                font=ImageFont.load_default(24),
+                anchor="mm",
+            )
+
+            img_bytes = io.BytesIO()
+            img.save(img_bytes, format="PNG", quality=85)
+            img_bytes.seek(0)
+            return img_bytes
+
+        except Exception as e:
+            logger.error(f"Failed to generate spread image: {e}")
+            return None
 
     @staticmethod
     def _shorten(text: str, limit: int = 950) -> str:

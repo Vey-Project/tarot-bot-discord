@@ -17,11 +17,43 @@ from .config import (
 )
 from .firebase_service import firebase_service
 from .models import SPREADS
+from bot_i18n import t as _i18n
 
 logger = logging.getLogger(__name__)
 
 intents = discord.Intents.default()
 intents.message_content = True
+
+
+def _resolve_author_lang(ctx) -> str:
+    """Best-effort language detection for prefix-command error replies.
+
+    Prefers the caller's saved ``UserSettings.language`` (when a settings
+    cache is available on the cog), falls back to the guild Discord locale,
+    then to ``DEFAULT_LANGUAGE``. Catches *everything* so an error-path
+    lookup never raises a second exception.
+    """
+    try:
+        from .config import DEFAULT_LANGUAGE
+        cog = getattr(getattr(ctx, "bot", None), "get_cog", lambda _n: None)("TarotSystem")
+        if cog is not None:
+            author_id = getattr(getattr(ctx, "author", None), "id", None)
+            guild_id = getattr(getattr(ctx, "guild", None), "id", None)
+            if author_id is not None:
+                user_settings, _server_settings = cog._get_settings(author_id, guild_id)
+                lang = user_settings.get_lang()
+                if lang:
+                    return lang
+        guild = getattr(ctx, "guild", None)
+        if guild is not None:
+            loc = getattr(guild, "preferred_locale", None)
+            if loc:
+                short = loc.split("-")[0].lower()
+                if short in ("id", "en", "pt", "es", "de"):
+                    return short
+        return DEFAULT_LANGUAGE
+    except Exception:
+        return "id"
 
 bot = commands.Bot(
     command_prefix="!",
@@ -96,6 +128,23 @@ async def on_command_error(ctx, error):
             )
         elif isinstance(error, commands.MissingPermissions):
             await ctx.send("⚠️ You don't have permission to use this command.")
+        elif isinstance(error, commands.CheckFailure):
+            # BOT_ADMIN_IDS guard (or other custom @commands.check) denied.
+            # Translate to the caller's preferred language so the rejection
+            # is friendly, not a raw `CheckFailure: ...` dump.
+            author_id = getattr(getattr(ctx, "author", None), "id", None)
+            language = _resolve_author_lang(ctx)
+            try:
+                msg = _i18n("errors.admin_only", lang=language, user_id=author_id)
+            except Exception:
+                msg = (
+                    f"🔒 This command is restricted to bot admins. "
+                    f"Your user ID: `{author_id}`."
+                )
+            try:
+                await ctx.send(msg)
+            except discord.NotFound:
+                pass
         elif isinstance(error, commands.CommandOnCooldown):
             retry_after = int(error.retry_after) + 1
             minutes, seconds = divmod(retry_after, 60)
