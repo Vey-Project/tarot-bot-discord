@@ -608,6 +608,8 @@ class TarotSystem(commands.Cog):
             return _("remind.disabled", lang=lang)
         try:
             when = datetime.fromisoformat(nfa)
+            if when.tzinfo is None:
+                when = when.replace(tzinfo=timezone.utc)
         except ValueError:
             return _("remind.disabled", lang=lang)
         delta = when - datetime.now(timezone.utc)
@@ -662,6 +664,8 @@ class TarotSystem(commands.Cog):
                     continue
                 try:
                     when = datetime.fromisoformat(nfa)
+                    if when.tzinfo is None:
+                        when = when.replace(tzinfo=timezone.utc)
                 except ValueError:
                     continue
                 if when > now:
@@ -2754,8 +2758,8 @@ class TarotSystem(commands.Cog):
                 await ctx.send(_("favourite.no_history", lang=language))
                 return
             lines = [
-                f"⭐ `{e['reading_id']}` — {e.get('spread_type', '?')} — {e.get('question') or '(no question)'}"
-                for e in favs[-10:]  # cap at 10 to stay under Discord's 2000-char limit
+                f"⭐ `{e['reading_id']}` — {e.get('spread_type', '?')} — {(e.get('question') or '(no question)')[:60]}"
+                for e in favs[-10:]  # cap at 10; truncate question to stay under 2000-char limit
             ]
             await ctx.send("\n".join(lines))
             return
@@ -3060,10 +3064,14 @@ class TarotSystem(commands.Cog):
             await ctx.send(_("changelog.no_changelog", lang=language))
             return
 
-        embed = discord.Embed(
-            title=_("changelog.title", lang=language),
-            color=0x9b59b6,
-        )
+        # Discord limits per embed: 25 fields, 1024 chars/value, 4096 total
+        # chars. A single long release can blow past any of these, so build
+        # one embed per release and truncate each field value safely.
+        try:
+            changelog_relpath = "CHANGELOG.md"  # relative to project root
+        except Exception:
+            changelog_relpath = "CHANGELOG.md"
+        footer_text = _("changelog.footer", lang=language, path=changelog_relpath)
 
         for release in releases:
             version = release.get("version", "?")
@@ -3075,49 +3083,49 @@ class TarotSystem(commands.Cog):
             )
             header = f"**v{version}** — {date_line}"
 
-            # Build bullet list grouped by section. Each section becomes its
-            # own embed field so Discord lays them out cleanly.
+            embed = discord.Embed(
+                title=_("changelog.title", lang=language),
+                color=0x9b59b6,
+            )
+
             sections = release.get("sections") or {}
             if not sections:
                 embed.add_field(name=header, value="_(no details)_", inline=False)
+                embed.set_footer(text=footer_text)
+                await ctx.send(embed=embed)
                 continue
 
-            # Pre-compute section labels for the locale.
             section_labels = {
                 name: _("changelog.section_" + name.lower(), lang=language)
                 for name in ("Added", "Changed", "Deprecated", "Removed", "Fixed", "Security")
                 if name in sections
             }
-            # Keep canonical ordering: Added → Changed → Deprecated → Removed → Fixed → Security
             canonical_order = ("Added", "Changed", "Deprecated", "Removed", "Fixed", "Security")
             ordered_names = [n for n in canonical_order if n in sections]
 
-            # First field: header + first section, so the version is anchored
-            # to its content even on mobile.
+            def _truncate(text: str, limit: int = 1024) -> str:
+                # Leave room for the trailing ellipsis so total stays <= limit.
+                if len(text) <= limit:
+                    return text
+                return text[: limit - 1].rstrip() + "…"
+
+            # First field: header + first section (keeps version anchored to content).
             first_name = ordered_names[0]
             first_label = section_labels[first_name]
             first_bullets = "\n".join(f"• {b}" for b in sections[first_name])
             embed.add_field(
                 name=header,
-                value=f"**{first_label}**\n{first_bullets}",
+                value=_truncate(f"**{first_label}**\n{first_bullets}"),
                 inline=False,
             )
 
             for name in ordered_names[1:]:
                 label = section_labels[name]
                 bullets = "\n".join(f"• {b}" for b in sections[name])
-                embed.add_field(name=label, value=bullets, inline=False)
+                embed.add_field(name=label, value=_truncate(bullets), inline=False)
 
-        # Point users at the source file so they can read the full thing.
-        try:
-            changelog_relpath = "CHANGELOG.md"  # relative to project root
-        except Exception:
-            changelog_relpath = "CHANGELOG.md"
-        embed.set_footer(
-            text=_("changelog.footer", lang=language, path=changelog_relpath)
-        )
-
-        await ctx.send(embed=embed)
+            embed.set_footer(text=footer_text)
+            await ctx.send(embed=embed)
 
     @commands.hybrid_command(
         name='resetcooldown',
