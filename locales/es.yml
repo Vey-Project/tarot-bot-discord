@@ -67,7 +67,7 @@ aimodels:
   description: Selecciona un modelo para interpretación de tarot.
   recommended: 'Recomendado: `kr/claude-sonnet-4.5` (predeterminado, alta calidad)'
   footer: Selecciona con `!aimodel [model_id]`
-  more_models: '\n... y {count} modelos más'
+  more_models: "\n... y {count} modelos más"
 aimodel:
   current: '📌 Modelo de IA actual: `{model}`'
   changed: '✅ Modelo de IA cambiado a: `{model}`'
