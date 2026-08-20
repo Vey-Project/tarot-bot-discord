@@ -1,0 +1,8 @@
+{
+  "user_id": 999999999,
+  "language": "id",
+  "reading_mode": "deep",
+  "ai_enabled": false,
+  "ai_model": "openrouter/openrouter/free",
+  "updated_at": "2026-08-21T04:40:17.920413"
+}

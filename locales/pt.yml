@@ -418,12 +418,16 @@ botinfo:
         '
       short: Explicação detalhada por carta, posição, orientação e contexto.
     languages:
-      label: 🌐 Suporte multilíngue
-      desc: 'O bot suporta 5 idiomas: 🇮🇩 Bahasa Indonesia (padrão), 🇬🇧 English, 🇵🇹 Português, 🇪🇸 Español, 🇩🇪 Deutsch. Troque
-        com `!language [código]`, ex. `!language pt`.
+      label: 🌐 Dukungan multi-bahasa
+      desc: 'O bot suporta 24 idiomas: 🇮🇩 Bahasa Indonesia, 🇬🇧 English, 🇵🇹 Português
+        (default), 🇧🇷 Português (Brasil), 🇪🇸 Español, 🌎 Español (LATAM), 🇩🇪 Deutsch,
+        🇫🇷 Français, 🇭🇺 Magyar, 🇮🇹 Italiano, 🇳🇱 Nederlands, 🇵🇱 Polski, 🇷🇴 Română, 🇸🇪
+        Svenska, 🇹🇷 Türkçe, 🇨🇿 Čeština, 🇷🇺 Русский, 🇺🇦 Українська, 🇹🇭 ไทย, 🇻🇳 Tiếng
+        Việt, 🇨🇳 简体中文, 🇹🇼 繁體中文, 🇯🇵 日本語, 🇰🇷 한국어. Troque com `!language [código]`, ex.
+        `!language en`.
 
         '
-      short: '5 idiomas: 🇮🇩 🇬🇧 🇵🇹 🇪🇸 🇩🇪. Troque com `!language [código]`.'
+      short: '24 idiomas: 🇮🇩 🇬🇧 🇵🇹 🇧🇷 🇪🇸 🌎 🇩🇪 🇫🇷 🇭🇺 🇮🇹 🇳🇱 🇵🇱 🇷🇴 🇸🇪 🇹🇷 🇨🇿 🇷🇺 🇺🇦 🇹🇭 🇻🇳 🇨🇳 🇹🇼 🇯🇵 🇰🇷. Troque com `!language [código]`.'
     modes:
       label: 🎭 4 modos de leitura
       desc: 'Escolha o modo ideal: `simple` (conciso), `deep` (aprofundado), `gentle` (suave e acolhedor) ou `direct` (direto

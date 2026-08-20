@@ -153,10 +153,7 @@ async def on_command_error(ctx, error):
             try:
                 msg = _i18n("errors.admin_only", lang=language, user_id=author_id)
             except Exception:
-                msg = (
-                    f"🔒 This command is restricted to bot admins. "
-                    f"Your user ID: `{author_id}`."
-                )
+                msg = "🔒 This command is restricted to bot admins."
             try:
                 await ctx.send(msg)
             except discord.NotFound:

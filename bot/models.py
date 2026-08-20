@@ -265,8 +265,13 @@ class UserSettings:
     def get_ai_model(self) -> str:
         return self.ai_model or NINE_ROUTER_MODEL
 
+    _AI_MODEL_RE = __import__("re").compile(r"^[A-Za-z0-9._/-]{1,64}$")
+
     def set_ai_model(self, model: str) -> bool:
-        self.ai_model = model
+        cleaned = (model or "").strip()
+        if not cleaned or not self._AI_MODEL_RE.match(cleaned):
+            return False
+        self.ai_model = cleaned
         self.save()
         return True
 

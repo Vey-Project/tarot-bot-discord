@@ -420,11 +420,15 @@ botinfo:
       short: Penjelasan detail per kartu, posisi, orientasi, dan konteks (karier/cinta).
     languages:
       label: 🌐 Dukungan multi-bahasa
-      desc: 'Bot mendukung 5 bahasa: 🇮🇩 Bahasa Indonesia (default), 🇬🇧 English, 🇵🇹 Português, 🇪🇸 Español, 🇩🇪 Deutsch. Ganti
-        dengan `!language [kode]`, mis. `!language en`.
+      desc: 'Bot mendukung 24 bahasa: 🇮🇩 Bahasa Indonesia (default), 🇬🇧 English, 🇵🇹
+        Português, 🇧🇷 Português (Brasil), 🇪🇸 Español, 🌎 Español (LATAM), 🇩🇪 Deutsch,
+        🇫🇷 Français, 🇭🇺 Magyar, 🇮🇹 Italiano, 🇳🇱 Nederlands, 🇵🇱 Polski, 🇷🇴 Română, 🇸🇪
+        Svenska, 🇹🇷 Türkçe, 🇨🇿 Čeština, 🇷🇺 Русский, 🇺🇦 Українська, 🇹🇭 ไทย, 🇻🇳 Tiếng
+        Việt, 🇨🇳 简体中文, 🇹🇼 繁體中文, 🇯🇵 日本語, 🇰🇷 한국어. Ganti dengan `!language [kode]`, mis.
+        `!language en`.
 
         '
-      short: '5 bahasa: 🇮🇩 🇬🇧 🇵🇹 🇪🇸 🇩🇪. Ganti pakai `!language [kode]`.'
+      short: '24 bahasa: 🇮🇩 🇬🇧 🇵🇹 🇧🇷 🇪🇸 🌎 🇩🇪 🇫🇷 🇭🇺 🇮🇹 🇳🇱 🇵🇱 🇷🇴 🇸🇪 🇹🇷 🇨🇿 🇷🇺 🇺🇦 🇹🇭 🇻🇳 🇨🇳 🇹🇼 🇯🇵 🇰🇷. Ganti pakai `!language [kode]`.'
     modes:
       label: 🎭 4 mode reading berbeda
       desc: 'Pilih mode yang cocok: `simple` (ringkas), `deep` (mendalam), `gentle` (lembut & suportif), atau `direct` (tegas

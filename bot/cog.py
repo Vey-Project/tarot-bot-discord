@@ -107,6 +107,9 @@ class TarotSystem(commands.Cog):
         #                              "paused": bool}}}
         # In-memory mirror of saves/settings/reminders.json
         self.user_reminders: Dict[int, Dict[str, dict]] = defaultdict(dict)
+        # Serialises reads/writes to saves/readings.json across concurrent
+        # commands. Initialised lazily in cog_load (needs a running loop).
+        self._readings_lock: Optional[asyncio.Lock] = None
         # Settings cache: avoids re-reading JSON from disk on every command.
         # Pre-populated by _load_user_settings / _load_server_settings.
         self._user_settings_cache: Dict[int, UserSettings] = {}
@@ -508,6 +511,7 @@ class TarotSystem(commands.Cog):
     REMIND_INTERVALS = {"daily", "weekly"}
     REMIND_TARGETS = ("daily_card", "weekly", "tarotdm")
     REMIND_INTERVAL_SECONDS = {"daily": 86400, "weekly": 604800}
+    REMIND_SNOOZE_SECONDS = {"1h": 3600, "6h": 21600, "1d": 86400, "3d": 259200, "1w": 604800}
 
     def _load_reminders(self):
         """Populate self.user_reminders from saves/settings/reminders.json."""
@@ -598,6 +602,18 @@ class TarotSystem(commands.Cog):
             self._save_reminders()
             return True
         return False
+
+    def _snooze_reminder(self, user_id: int, target: str, seconds: int):
+        bucket = self.user_reminders.get(user_id, {})
+        if target not in bucket:
+            return None
+        entry = bucket[target]
+        if entry.get("paused") or entry.get("interval") == "off":
+            return None
+        next_fire = datetime.now(timezone.utc) + timedelta(seconds=seconds)
+        entry["next_fire_at"] = next_fire.isoformat()
+        self._save_reminders()
+        return self._humanize_duration(timedelta(seconds=seconds))
 
     def _format_next_fire(self, entry: dict, lang: str) -> str:
         """Return human-readable 'next: in X' string for /remind list."""
@@ -885,21 +901,22 @@ class TarotSystem(commands.Cog):
         user_settings, _server_settings = self._get_settings(ctx.author.id, ctx.guild.id if ctx.guild else None)
         lang = user_settings.get_lang()
 
-        try:
-            response = requests.get(f"{NINE_ROUTER_BASE_URL}/models", timeout=5)
-            if response.status_code == 200:
+        def _fetch_models_sync():
+            try:
+                response = requests.get(f"{NINE_ROUTER_BASE_URL}/models", timeout=5)
+                if response.status_code != 200:
+                    return []
                 data = response.json()
                 if isinstance(data, dict) and 'data' in data:
-                    models = [m.get('id') for m in data.get('data', []) if m.get('id')]
-                elif isinstance(data, list):
-                    models = [m.get('id') for m in data if m.get('id')]
-                else:
-                    models = []
-            else:
-                models = []
-        except Exception as e:
-            logger.warning(f"Could not fetch models: {e}")
-            models = []
+                    return [m.get('id') for m in data.get('data', []) if m.get('id')]
+                if isinstance(data, list):
+                    return [m.get('id') for m in data if m.get('id')]
+                return []
+            except Exception as e:
+                logger.warning(f"Could not fetch models: {e}")
+                return []
+
+        models = await asyncio.to_thread(_fetch_models_sync)
 
         if not models:
             models = [
@@ -977,7 +994,6 @@ class TarotSystem(commands.Cog):
         name='tarot',
         description='🔮 Dapatkan reading tarot dengan spread pilihanmu'
     )
-    @commands.cooldown(1, 60, commands.BucketType.user)
     async def tarot_command(self, ctx, spread_type: str = None, *, question: str = None):
         logger.info("tarot cmd user=%s guild=%s", getattr(ctx.author, "id", None), getattr(getattr(ctx, "guild", None), "id", None))
         user_settings, server_settings = self._get_settings(
@@ -2785,7 +2801,7 @@ class TarotSystem(commands.Cog):
         name='remind',
         description='⏰ Set / list / pause periodic tarot reminders (daily, weekly)'
     )
-    async def remind_command(self, ctx, action: str = None, target: str = None, interval: str = None):
+    async def remind_command(self, ctx, action: str = None, target: str = None, interval: str = None, duration: str = None):
         """Manage periodic reminders for daily card, weekly reading, etc.
 
         Usage:

@@ -415,12 +415,16 @@ botinfo:
         '
       short: Detailed per-card explanation by position, orientation, and context.
     languages:
-      label: 🌐 Multi-language support
-      desc: 'Bot supports 5 languages: 🇮🇩 Bahasa Indonesia (default), 🇬🇧 English, 🇵🇹 Português, 🇪🇸 Español, 🇩🇪 Deutsch. Switch
-        with `!language [code]`, e.g. `!language id`.
+      label: 🌐 Dukungan multi-bahasa
+      desc: 'The bot supports 24 languages: 🇮🇩 Bahasa Indonesia, 🇬🇧 English (default), 🇵🇹
+        Português, 🇧🇷 Português (Brasil), 🇪🇸 Español, 🌎 Español (LATAM), 🇩🇪 Deutsch,
+        🇫🇷 Français, 🇭🇺 Magyar, 🇮🇹 Italiano, 🇳🇱 Nederlands, 🇵🇱 Polski, 🇷🇴 Română, 🇸🇪
+        Svenska, 🇹🇷 Türkçe, 🇨🇿 Čeština, 🇷🇺 Русский, 🇺🇦 Українська, 🇹🇭 ไทย, 🇻🇳 Tiếng
+        Việt, 🇨🇳 简体中文, 🇹🇼 繁體中文, 🇯🇵 日本語, 🇰🇷 한국어. Switch with `!language [code]`, e.g.
+        `!language id`.
 
         '
-      short: '5 languages: 🇮🇩 🇬🇧 🇵🇹 🇪🇸 🇩🇪. Switch with `!language [code]`.'
+      short: '24 languages: 🇮🇩 🇬🇧 🇵🇹 🇧🇷 🇪🇸 🌎 🇩🇪 🇫🇷 🇭🇺 🇮🇹 🇳🇱 🇵🇱 🇷🇴 🇸🇪 🇹🇷 🇨🇿 🇷🇺 🇺🇦 🇹🇭 🇻🇳 🇨🇳 🇹🇼 🇯🇵 🇰🇷. Switch with `!language [code]`.'
     modes:
       label: 🎭 4 reading modes
       desc: 'Pick the mode that fits: `simple` (concise), `deep` (thorough), `gentle` (soft & supportive), or `direct` (straightforward
@@ -657,3 +661,24 @@ vote:
     • Costs nothing — just a click every 12h'
   footer: top.gg enforces a 12-hour cooldown between votes.
   button: Vote on top.gg
+
+
+# === /card /cardsearch /remind snooze v1.2 ===
+card_lookup:
+  title: "🔍 Card Lookup"
+  not_found: "❌ No card named **{name}**. Try `/cardsearch <keyword>`."
+  is_spread: "⚠️ `{name}` is a spread, not a card. Use `/tarot {name}` instead."
+  appearances: "Appeared {count}× in your history"
+  more: "Use `/cardsearch <keyword>` to find more cards."
+
+cardsearch_lookup:
+  title: "🔍 Card Search"
+  query: "Query: `{keyword}`"
+  empty: "❌ No cards match **{keyword}**."
+  result: "**{i}. {name}** — {snippet}"
+  footer: "Use `/card <name>` for full details."
+
+remind_snooze:
+  set: "⏰ **{target}** snoozed until {when}."
+  invalid_duration: "⚠️ Invalid duration. Use: 1h, 6h, 1d, 3d, 1w."
+  not_found: "❌ No active reminder for **{target}**."
