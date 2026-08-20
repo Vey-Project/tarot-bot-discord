@@ -29,8 +29,14 @@ LOCALES_DIR = Path(__file__).parent / "locales"
 # Cache of loaded translations
 _translations_cache: Dict[str, dict] = {}
 
-# Supported locales (Phase 4: ID, EN, PT, ES, DE)
-SUPPORTED_LOCALES = ["id", "en", "pt", "es", "de"]
+# Supported locales — extends the original id/en/pt/es/de with the full
+# Discord locale set. Translations copied from en.yml as a starting point;
+# native-speaker review pending. Missing keys fall back through FALLBACK_CHAIN.
+SUPPORTED_LOCALES = [
+    "id", "en", "pt", "es", "de",
+    "es-419", "fr", "hu", "it", "nl", "pl", "ro", "pt-BR", "sv", "vi",
+    "tr", "cs", "ru", "uk", "th", "zh-CN", "ja", "zh-TW", "ko",
+]
 
 # Default locale for new users
 DEFAULT_LOCALE = "id"
@@ -181,6 +187,25 @@ def get_locale_name(locale: str) -> str:
         "pt": "Português",
         "es": "Español",
         "de": "Deutsch",
+        "es-419": "Español (Latinoamérica)",
+        "fr": "Français",
+        "hu": "Magyar",
+        "it": "Italiano",
+        "nl": "Nederlands",
+        "pl": "Polski",
+        "ro": "Română",
+        "pt-BR": "Português (Brasil)",
+        "sv": "Svenska",
+        "vi": "Tiếng Việt",
+        "tr": "Türkçe",
+        "cs": "Čeština",
+        "ru": "Русский",
+        "uk": "Українська",
+        "th": "ไทย",
+        "zh-CN": "简体中文",
+        "ja": "日本語",
+        "zh-TW": "繁體中文",
+        "ko": "한국어",
     }
     return names.get(locale, locale)
 
