@@ -655,6 +655,7 @@ class TarotSystem(commands.Cog):
 
     async def _fire_reminder(self, user_id: int, target: str):
         """Send a reminder notification to a user (DM preferred, channel fallback)."""
+        logger.info("reminder fired user=%s target=%s", user_id, target)
         user_settings = self.get_user_settings(user_id)
         lang = user_settings.get_lang()
         target_label = _("remind.targets." + target, lang=lang, default=target)
@@ -952,6 +953,7 @@ class TarotSystem(commands.Cog):
     )
     @commands.cooldown(1, 60, commands.BucketType.user)
     async def tarot_command(self, ctx, spread_type: str = None, *, question: str = None):
+        logger.info("tarot cmd user=%s guild=%s", getattr(ctx.author, "id", None), getattr(getattr(ctx, "guild", None), "id", None))
         user_settings, server_settings = self._get_settings(
             ctx.author.id,
             ctx.guild.id if ctx.guild else None
@@ -1307,6 +1309,7 @@ class TarotSystem(commands.Cog):
         description='📅 Dapatkan reading mingguan (cooldown 6 hari 20 jam)'
     )
     async def weekly_command(self, ctx):
+        logger.info("weekly cmd user=%s guild=%s", getattr(ctx.author, "id", None), getattr(getattr(ctx, "guild", None), "id", None))
         user_settings, _server_settings = self._get_settings(ctx.author.id, ctx.guild.id if ctx.guild else None)
         language = user_settings.get_lang()
         mode = user_settings.get_mode()
@@ -1733,6 +1736,7 @@ class TarotSystem(commands.Cog):
         description='📅 Dapatkan kartu tarot harianmu (cooldown 22 jam)'
     )
     async def daily_command(self, ctx):
+        logger.info("daily cmd user=%s guild=%s", getattr(ctx.author, "id", None), getattr(getattr(ctx, "guild", None), "id", None))
         user_settings, _server_settings = self._get_settings(ctx.author.id, ctx.guild.id if ctx.guild else None)
         language = user_settings.get_lang()
         mode = user_settings.get_mode()
@@ -1978,6 +1982,7 @@ class TarotSystem(commands.Cog):
         description='📜 Lihat riwayat reading tarotmu'
     )
     async def history_command(self, ctx, limit: int = 5):
+        logger.info("history cmd user=%s guild=%s", getattr(ctx.author, "id", None), getattr(getattr(ctx, "guild", None), "id", None))
         user_settings, _server_settings = self._get_settings(ctx.author.id, ctx.guild.id if ctx.guild else None)
         language = user_settings.get_lang()
 
@@ -2048,6 +2053,7 @@ class TarotSystem(commands.Cog):
         description='🔮 Dapatkan wawasan personal dari pola reading tarotmu'
     )
     async def insight_command(self, ctx):
+        logger.info("insight cmd user=%s guild=%s", getattr(ctx.author, "id", None), getattr(getattr(ctx, "guild", None), "id", None))
         user_settings, _server_settings = self._get_settings(ctx.author.id, ctx.guild.id if ctx.guild else None)
         language = user_settings.get_lang()
 

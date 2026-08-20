@@ -2,14 +2,19 @@
 
 from __future__ import annotations
 
+import asyncio
 import logging
 import os
+import sys
 
 import discord
 from discord.ext import commands
 
 from .cog import TarotSystem
 from .config import (
+    DISCORD_LOG_LEVEL,
+    DISCORD_LOG_THROTTLE,
+    DISCORD_LOG_WEBHOOK_URL,
     NINE_ROUTER_ENABLED,
     NINE_ROUTER_MODEL,
     SYNC_SLASH_COMMANDS,
@@ -17,7 +22,18 @@ from .config import (
 )
 from .firebase_service import firebase_service
 from .models import SPREADS
+from .log_handler import DiscordWebhookHandler
 from bot_i18n import t as _i18n
+
+_LOG_LEVELS = {
+    "DEBUG": logging.DEBUG,
+    "INFO": logging.INFO,
+    "WARNING": logging.WARNING,
+    "ERROR": logging.ERROR,
+    "CRITICAL": logging.CRITICAL,
+}
+
+_webhook_handler: DiscordWebhookHandler | None = None
 
 logger = logging.getLogger(__name__)
 
@@ -182,8 +198,59 @@ async def on_message(message):
     await bot.process_commands(message)
 
 
+def _setup_logging() -> DiscordWebhookHandler | None:
+    """Configure root logger with console + optional Discord webhook handler.
+
+    Returns the webhook handler so the caller can start/stop its pump task
+    around the bot's lifetime.
+    """
+    root = logging.getLogger()
+    root.setLevel(logging.INFO)
+
+    # Console: human-friendly, INFO+.
+    console = logging.StreamHandler(sys.stdout)
+    console.setLevel(logging.INFO)
+    console.setFormatter(logging.Formatter(
+        fmt="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+        datefmt="%H:%M:%S",
+    ))
+    root.addHandler(console)
+
+    # File: catch-all for post-mortem, NOT in stdout.
+    try:
+        from .config import SAVES_DIR
+        log_path = SAVES_DIR.parent / "bot.log"
+        log_path.parent.mkdir(parents=True, exist_ok=True)
+        fh = logging.FileHandler(log_path, encoding="utf-8")
+        fh.setLevel(logging.INFO)
+        fh.setFormatter(logging.Formatter(
+            fmt="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+        ))
+        root.addHandler(fh)
+    except Exception as e:
+        print(f"⚠️ Could not open bot.log: {e}")
+
+    handler: DiscordWebhookHandler | None = None
+    if DISCORD_LOG_WEBHOOK_URL:
+        try:
+            level = _LOG_LEVELS.get((DISCORD_LOG_LEVEL or "WARNING").upper(), logging.WARNING)
+            handler = DiscordWebhookHandler(
+                webhook_url=DISCORD_LOG_WEBHOOK_URL,
+                level=level,
+                throttle_seconds=DISCORD_LOG_THROTTLE,
+            )
+            handler.setFormatter(logging.Formatter("%(asctime)s %(message)s", datefmt="%H:%M:%S"))
+            root.addHandler(handler)
+            print(f"🔔 Discord log webhook: enabled (level={DISCORD_LOG_LEVEL})")
+        except Exception as e:
+            print(f"⚠️ Discord log webhook init failed: {e}")
+            handler = None
+    return handler
+
+
 def main():
     """Entry point: load token, run the bot."""
+    global _webhook_handler
     token = os.getenv("DISCORD_TOKEN")
     if not token:
         print("❌ ERROR: DISCORD_TOKEN not found!")
@@ -194,10 +261,23 @@ def main():
         print("\n🔗 Get token from: https://discord.com/developers/applications")
         return
 
+    _webhook_handler = _setup_logging()
+
     try:
-        bot.run(token)
+        async def _runner():
+            try:
+                if _webhook_handler:
+                    await _webhook_handler.start()
+                await bot.start(token)
+            finally:
+                if _webhook_handler:
+                    await _webhook_handler.stop()
+
+        asyncio.run(_runner())
     except discord.LoginFailure:
         print("❌ Invalid token. Please check your DISCORD_TOKEN in .env file.")
+    except KeyboardInterrupt:
+        print("\n👋 Shutting down.")
     except Exception as e:
         print(f"❌ Failed to start bot: {e}")
 
