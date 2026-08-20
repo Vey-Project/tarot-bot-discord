@@ -129,6 +129,7 @@ cooldown:
   message: '⏳ **Cooldown aktif!** Tunggu **{wait}** sebelum `/tarot` lagi.
 
     💎 *Premium users punya cooldown lebih cepat. Cek `!premium`*'
+  global: ⏳ Pelan-pelan. Coba lagi dalam **{wait}**.
 error:
   generic: 💥 An unexpected error occurred. Please try again later.
   not_found: ❌ Command not found. Use `!help` to see all available commands.

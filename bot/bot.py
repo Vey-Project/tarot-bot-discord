@@ -162,15 +162,22 @@ async def on_command_error(ctx, error):
             except discord.NotFound:
                 pass
         elif isinstance(error, commands.CommandOnCooldown):
-            retry_after = int(error.retry_after) + 1
-            minutes, seconds = divmod(retry_after, 60)
-            wait_str = f"{minutes}m {seconds}s" if minutes > 0 else f"{seconds}s"
-            msg = (
-                f"⏳ **Cooldown aktif!** Tunggu **{wait_str}** sebelum `/tarot` lagi.\n"
-                "💎 *Premium users punya cooldown lebih cepat. Cek `!premium`*"
-            ) if ctx.author.id and ctx.guild else (
-                f"⏳ **Cooldown!** Wait **{wait_str}** before `/tarot` again."
-            )
+            language = _resolve_author_lang(ctx)
+            # Use the same _format_cooldown helper the cog uses so both prefix
+            # and slash surfaces produce identical, sub-second precision strings.
+            try:
+                from bot.cog import TarotSystem
+                wait_str = TarotSystem._format_cooldown(
+                    error.retry_after or 0.0, language
+                )
+            except Exception:
+                retry_after = int(error.retry_after) + 1
+                minutes, seconds = divmod(retry_after, 60)
+                wait_str = f"{minutes}m {seconds}s" if minutes > 0 else f"{seconds}s"
+            try:
+                msg = _i18n("cooldown.global", lang=language, wait=wait_str)
+            except Exception:
+                msg = f"⏳ Cooldown. Try again in **{wait_str}**."
             try:
                 await ctx.send(msg)
             except discord.NotFound:

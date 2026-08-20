@@ -202,6 +202,26 @@ class TarotSystem(commands.Cog):
         return language
 
     @staticmethod
+    def _format_cooldown(seconds: float, lang: str) -> str:
+        """Render a retry_after duration as a short human string.
+
+        e.g. 0.43 -> "0.5s", 65 -> "1m 5s", 3700 -> "1h 1m".
+        Locale-aware: 'en' uses "Xh Ym Zs" abbreviations, others use a
+        plain "Xs" / "Xm" to keep this method dependency-free.
+        """
+        seconds = max(0.0, float(seconds))
+        if seconds < 1.0:
+            return f"{seconds:.1f}s"
+        if seconds < 60:
+            return f"{int(seconds)}s"
+        if seconds < 3600:
+            m, s = divmod(int(seconds), 60)
+            return f"{m}m {s}s"
+        h, rem = divmod(int(seconds), 3600)
+        m = rem // 60
+        return f"{h}h {m}m"
+
+    @staticmethod
     def _split_embed_text(text: str, limit: int = 3600) -> List[str]:
         text = text.strip()
         if not text:
@@ -3403,6 +3423,32 @@ class TarotSystem(commands.Cog):
                     await ctx.send(msg)
                 except discord.NotFound:
                     pass
+            return
+
+        if isinstance(original, commands.CommandOnCooldown):
+            # Rate-limit hit. Tell the user ephemerally and swallow the
+            # exception so it doesn't bubble up as a never-retrieved task
+            # warning in the bot's logs.
+            try:
+                language = self._resolve_lang(ctx)
+            except Exception:
+                language = "id"
+            retry_after = original.retry_after or 0.0
+            wait_str = TarotSystem._format_cooldown(retry_after, language)
+            try:
+                msg = _("cooldown.global", lang=language, wait=wait_str)
+            except Exception:
+                msg = f"⏳ Slow down. Try again in **{wait_str}**."
+            try:
+                if hasattr(ctx, "interaction") and ctx.interaction is not None:
+                    if not ctx.interaction.response.is_done():
+                        await ctx.interaction.response.send_message(msg, ephemeral=True)
+                    else:
+                        await ctx.followup.send(msg, ephemeral=True)
+                else:
+                    await ctx.send(msg)
+            except (discord.NotFound, discord.HTTPException):
+                pass
             return
 
         # Anything else: re-raise so the global handler can decide.

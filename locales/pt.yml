@@ -128,6 +128,7 @@ ai_toggle:
   disabled: ⏸️ Interpretação de IA desativada.
 cooldown:
   message: ⏳ **Cooldown!** Aguarde **{wait}** antes de usar `/tarot` novamente.
+  global: ⏳ Devagar. Tente novamente em **{wait}**.
 error:
   generic: 💥 Ocorreu um erro inesperado. Por favor, tente novamente mais tarde.
   not_found: ❌ Comando não encontrado. Use `!help` para ver todos os comandos disponíveis.
