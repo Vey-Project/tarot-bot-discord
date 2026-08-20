@@ -45,7 +45,6 @@ from .config import (
     JOURNALS_DIR,
     LICENSE_NAME,
     NINE_ROUTER_BASE_URL,
-    NINE_ROUTER_ENABLED,
     REPO_URL,
     SAVES_DIR,
     SETTINGS_DIR,

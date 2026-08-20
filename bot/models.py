@@ -357,6 +357,10 @@ class TarotCard:
         return "Reversed" if self.is_reversed else "Upright"
 
     @property
+    def orientation_symbol(self) -> str:
+        return "🔄" if self.is_reversed else "⬆️"
+
+    @property
     def meaning(self) -> str:
         return self.meaning_rev if self.is_reversed else self.meaning_up
 
