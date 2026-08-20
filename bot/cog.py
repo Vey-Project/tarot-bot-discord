@@ -900,7 +900,7 @@ class TarotSystem(commands.Cog):
         model_list = "\n".join(sorted_models[:50])
         if len(sorted_models) > 50:
             more = len(sorted_models) - 50
-            model_list += _("\n... dan {count} model lainnya", lang=lang, count=more) if lang == 'id' else f"\n... and {more} more models"
+            model_list += _("aimodels.more_models", lang=lang, count=more)
 
         embed = discord.Embed(
             title=_("aimodels.title", lang=lang),
