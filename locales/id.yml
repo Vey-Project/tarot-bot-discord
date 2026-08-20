@@ -1,24 +1,20 @@
 errors:
-  admin_only: '🔒 Command ini hanya untuk admin bot. User ID kamu: `{user_id}`. Hubungi
-    owner bot kalau merasa ini keliru.'
+  admin_only: '🔒 Command ini hanya untuk admin bot. User ID kamu: `{user_id}`. Hubungi owner bot kalau merasa ini keliru.'
 tarot:
   question_prompt: Mau refleksi soal apa hari ini?
   spread_prompt: Pilih spread tarot
   spread_unknown: '❌ Spread tidak dikenal. Spread yang tersedia:
 
-    `single`, `three`, `celtic`, `relationship`, `career`, `yesno`, `weekly`, `love`,
-    `decision`, `selfcare`, `shadow`
+    `single`, `three`, `celtic`, `relationship`, `career`, `yesno`, `weekly`, `love`, `decision`, `selfcare`, `shadow`
 
 
     Contoh: `!tarot three Apakah saya akan menemukan cinta tahun ini?`'
-  spread_confirm: ⚠️ Spread ini menggunakan {count} kartu dan mungkin memakan waktu.
-    Lanjutkan? (Reaksi ✅ dalam 30 detik)
+  spread_confirm: ⚠️ Spread ini menggunakan {count} kartu dan mungkin memakan waktu. Lanjutkan? (Reaksi ✅ dalam 30 detik)
   spread_timeout: ⏰ Pemilihan spread habis waktu.
   spread_menu_title: 🔮 Pilih Spread Tarot
   spread_menu_desc: 'Pilih jenis spread dengan memberi reaksi di bawah:'
   spread_menu_howto: Cara Menggunakan
-  spread_menu_howto_desc: Reaksi dengan emoji yang sesuai atau ketik `!tarot [spread]
-    [pertanyaan]`
+  spread_menu_howto_desc: Reaksi dengan emoji yang sesuai atau ketik `!tarot [spread] [pertanyaan]`
   spread_menu_example: 'Contoh: !tarot three Akankah saya sukses di pekerjaan baru?'
   spread_menu_footer: Pilih spread
   saved_to_history: ✅ Reading `{reading_id}` sudah tersimpan di history kamu.
@@ -31,8 +27,7 @@ tarot:
     footer: Reading ID
   detail_embed:
     title: 📖 Penjelasan Detail Kartu
-    description: Penjelasan lengkap setiap kartu berdasarkan posisi, orientasi, dan
-      tema.
+    description: Penjelasan lengkap setiap kartu berdasarkan posisi, orientasi, dan tema.
     footer: Reading ID
   card_images:
     header: '**🃏 Gambar Kartu:**'
@@ -67,7 +62,9 @@ aimodels:
   description: Pilih model untuk interpretasi tarot.
   recommended: 'Rekomendasi: `kr/claude-sonnet-4.5` (default, kualitas tinggi)'
   footer: Pilih dengan `!aimodel [model_id]`
-  more_models: "\n... dan {count} model lainnya"
+  more_models: '
+
+    ... dan {count} model lainnya'
 aimodel:
   current: '📌 Model AI saat ini: `{model}`'
   changed: '✅ Model AI diubah ke: `{model}`'
@@ -91,8 +88,7 @@ ai_status:
 
     Continuation limit: `{limit}`'
   disabled_detail: Set `NINE_ROUTER_ENABLED=true` di `.env` untuk mengaktifkan AI.
-  not_configured_detail: Tambahkan `NINE_ROUTER_API_KEY=sk-your-key-here` ke `.env`
-    atau aktifkan 9Router.
+  not_configured_detail: Tambahkan `NINE_ROUTER_API_KEY=sk-your-key-here` ke `.env` atau aktifkan 9Router.
   footer: Penjelasan lokal tetap berfungsi tanpa AI.
   user_enabled: 'AI untuk user: **{status}**'
   user_setting_on: Aktif
@@ -103,8 +99,7 @@ ai_interpretation:
   footer: Reading ID
   generating: ✨ Membuat interpretasi AI...
   silent_skip: ✨
-  truncated: ⚠️ Interpretasi AI masih terkena batas panjang output. Naikkan `NINE_ROUTER_MAX_OUTPUT_TOKENS`
-    di `.env`.
+  truncated: ⚠️ Interpretasi AI masih terkena batas panjang output. Naikkan `NINE_ROUTER_MAX_OUTPUT_TOKENS` di `.env`.
 language:
   current: '🌐 Bahasa kamu saat ini: **{lang_code}**
 
@@ -171,12 +166,10 @@ journal:
     **Catatan:** {2}'
   reflection:
     title: 📝 Jurnal Refleksi
-    prompt: 'Tulis catatan refleksimu untuk reading ini. Kirim pesan dengan `!journal
-      add {id}` diikuti catatanmu.
+    prompt: 'Tulis catatan refleksimu untuk reading ini. Kirim pesan dengan `!journal add {id}` diikuti catatanmu.
 
       Contoh: `!journal add {id} Ini adalah refleksi saya...`'
-    cancel: ⏰ Waktu habis. Kamu bisa menambahkan catatan nanti dengan `!journal add
-      {id} [catatan]`.
+    cancel: ⏰ Waktu habis. Kamu bisa menambahkan catatan nanti dengan `!journal add {id} [catatan]`.
 history:
   no_history: 📜 Belum ada history. Coba `/tarot` dulu yuk!
   no_history_full: 📜 Tidak ada riwayat reading
@@ -184,8 +177,7 @@ history:
   title: 📜 Riwayat Reading
   question_label: P
   cards: Kartu
-  footer: Menampilkan {shown} dari {total} reading • Gunakan !history [jumlah] untuk
-    melihat lebih banyak
+  footer: Menampilkan {shown} dari {total} reading • Gunakan !history [jumlah] untuk melihat lebih banyak
 insight:
   no_data: 🔮 Belum cukup data untuk insight. Lakukan minimal 3 reading!
   title: 🔮 Insight Personal Kamu
@@ -194,15 +186,13 @@ insight:
   description: 'Berdasarkan riwayat reading tarotmu:'
   favorite: Spread Favorit
   favorite_desc: Kamu paling sering menggunakan spread `{0}` ({1} kali).
-  reversed: 'Pola: Banyak kartu reversed ({0:.0f}%) menunjukkan bahwa kamu sedang
-    menghadapi tantangan internal atau energi yang terhambat.'
-  upright: 'Pola: Sebagian besar kartu upright ({0:.0f}%) menunjukkan ekspresi energi
-    yang jelas dan terbuka dalam hidupmu.'
+  reversed: 'Pola: Banyak kartu reversed ({0:.0f}%) menunjukkan bahwa kamu sedang menghadapi tantangan internal atau energi
+    yang terhambat.'
+  upright: 'Pola: Sebagian besar kartu upright ({0:.0f}%) menunjukkan ekspresi energi yang jelas dan terbuka dalam hidupmu.'
   frequent: Kartu Sering Muncul
-  frequent_desc: '{0}, sering muncul dalam readingmu. Ini adalah tema penting dalam
-    perjalanan hidupmu.'
-  commitment: 'Komitmen: Dengan lebih dari 10 reading, kamu mengembangkan koneksi
-    yang kuat dengan kebijaksanaan tarot. Pertimbangkan untuk menulis jurnal wawasanmu.'
+  frequent_desc: '{0}, sering muncul dalam readingmu. Ini adalah tema penting dalam perjalanan hidupmu.'
+  commitment: 'Komitmen: Dengan lebih dari 10 reading, kamu mengembangkan koneksi yang kuat dengan kebijaksanaan tarot. Pertimbangkan
+    untuk menulis jurnal wawasanmu.'
   statistics: 📊 Statistik
   statistics_desc: '• Total reading: **{0}**
 
@@ -231,46 +221,38 @@ cards:
   pentacles: 🃏 Kartu Suit Pentacles
   all: 🃏 Dek Tarot Lengkap
   overview: 🃏 Ikhtisar Dek Tarot
-  error: '❌ Kategori tidak valid. Gunakan: `major`, `wands`, `cups`, `swords`, `pentacles`,
-    atau `all`'
+  error: '❌ Kategori tidak valid. Gunakan: `major`, `wands`, `cups`, `swords`, `pentacles`, atau `all`'
   no_cards: ❌ Tidak ada kartu dalam kategori ini.
   page_footer: Halaman {current}/{total} • Reaksi untuk navigasi
 help:
   title: 🔮 Menu Bantuan Tarot Bot
   description: Pelajari cara menggunakan fitur bot tarot
   main: 🃏 PERINTAH UTAMA
-  main_desc: '`!tarot [spread] [pertanyaan]` - Dapatkan reading `!card [nama]` - Detail
-    kartu `!cards [kategori]` - Daftar kartu `!daily` - Kartu harianmu `!weekly` -
-    Reading mingguan `!tarotdm [spread] [pertanyaan]` - Reading via DM `!history [jumlah]`
-    - Reading sebelumnya `!insight` - Wawasan personal `!journal add [id] [catatan]`
-    - Tambah catatan `!journal` - Lihat catatan `!exportdata` - Ekspor data `!deletedata
-    confirm` - Hapus data `!language [id/en]` - Ubah bahasa `!mode [simple/deep/gentle/direct]`
-    - Ubah mode `!aimodels` - Lihat daftar model AI `!aimodel [model_id]` - Pilih
-    model AI `!aion` / `!aioff` - Aktif/nonaktif AI `!aistatus` - Status AI `!botinfo`
-    - Info bot `!firebase` - Status Firebase `!help` - Menu bantuan ini'
+  main_desc: '`!tarot [spread] [pertanyaan]` - Dapatkan reading `!card [nama]` - Detail kartu `!cards [kategori]` - Daftar
+    kartu `!daily` - Kartu harianmu `!weekly` - Reading mingguan `!tarotdm [spread] [pertanyaan]` - Reading via DM `!history
+    [jumlah]` - Reading sebelumnya `!insight` - Wawasan personal `!journal add [id] [catatan]` - Tambah catatan `!journal`
+    - Lihat catatan `!exportdata` - Ekspor data `!deletedata confirm` - Hapus data `!language [id/en]` - Ubah bahasa `!mode
+    [simple/deep/gentle/direct]` - Ubah mode `!aimodels` - Lihat daftar model AI `!aimodel [model_id]` - Pilih model AI `!aion`
+    / `!aioff` - Aktif/nonaktif AI `!aistatus` - Status AI `!botinfo` - Info bot `!firebase` - Status Firebase `!help` - Menu
+    bantuan ini'
   spreads: 📊 JENIS SPREAD
-  spreads_desc: • `single` - 1 kartu, panduan cepat • `three` - 3 kartu, masa lalu-sekarang-depan
-    • `celtic` - 10 kartu, reading komprehensif • `relationship` - 5 kartu, dinamika
-    hubungan • `career` - 6 kartu, jalur karir • `yesno` - 3 kartu, panduan ya/tidak
-    • `weekly` - 5 kartu, panduan mingguan • `love` - 6 kartu, wawasan cinta • `decision`
-    - 5 kartu, bantuan keputusan • `selfcare` - 5 kartu, perawatan diri • `shadow`
-    - 5 kartu, bayangan diri
+  spreads_desc: • `single` - 1 kartu, panduan cepat • `three` - 3 kartu, masa lalu-sekarang-depan • `celtic` - 10 kartu, reading
+    komprehensif • `relationship` - 5 kartu, dinamika hubungan • `career` - 6 kartu, jalur karir • `yesno` - 3 kartu, panduan
+    ya/tidak • `weekly` - 5 kartu, panduan mingguan • `love` - 6 kartu, wawasan cinta • `decision` - 5 kartu, bantuan keputusan
+    • `selfcare` - 5 kartu, perawatan diri • `shadow` - 5 kartu, bayangan diri
   modes: 🎭 MODE READING
-  modes_desc: • `simple` - Ringkas dan mudah dipahami • `deep` - Interpretasi mendalam
-    • `gentle` - Nada lembut • `direct` - Jawaban tegas
+  modes_desc: • `simple` - Ringkas dan mudah dipahami • `deep` - Interpretasi mendalam • `gentle` - Nada lembut • `direct`
+    - Jawaban tegas
   cards: 🎴 KATEGORI KARTU
-  cards_desc: • `major` - Major Arcana (22 kartu) • `wands` - Suit Wands (14 kartu)
-    • `cups` - Suit Cups (14 kartu) • `swords` - Suit Swords (14 kartu) • `pentacles`
-    - Suit Pentacles (14 kartu) • `all` - Dek lengkap (78 kartu)
+  cards_desc: • `major` - Major Arcana (22 kartu) • `wands` - Suit Wands (14 kartu) • `cups` - Suit Cups (14 kartu) • `swords`
+    - Suit Swords (14 kartu) • `pentacles` - Suit Pentacles (14 kartu) • `all` - Dek lengkap (78 kartu)
   examples: 💡 CONTOH
-  examples_desc: • `!tarot three Akankah saya menemukan cinta?` • `!card The Fool`
-    • `!cards major` • `!tarot relationship` • `!daily` • `!weekly` • `!language id`
-    • `!mode deep` • `!aimodel kr/claude-sonnet-4.5` • `!tarotdm three Pertanyaan
+  examples_desc: • `!tarot three Akankah saya menemukan cinta?` • `!card The Fool` • `!cards major` • `!tarot relationship`
+    • `!daily` • `!weekly` • `!language id` • `!mode deep` • `!aimodel kr/claude-sonnet-4.5` • `!tarotdm three Pertanyaan
     rahasia`
   tips: 💭 TIPS READING LEBIH BAIK
-  tips_desc: • Fokus pada pertanyaan sebelum bertanya • Buka pikiran untuk interpretasi
-    • Gunakan spread berbeda untuk kebutuhan berbeda • Tinjau history untuk melihat
-    pola • Tarot mencerminkan kemungkinan, bukan kepastian
+  tips_desc: • Fokus pada pertanyaan sebelum bertanya • Buka pikiran untuk interpretasi • Gunakan spread berbeda untuk kebutuhan
+    berbeda • Tinjau history untuk melihat pola • Tarot mencerminkan kemungkinan, bukan kepastian
   footer_text: Tarot adalah cermin untuk bawah sadarmu • Sabarlah dalam perjalanan
   category_dict:
     commands:
@@ -316,6 +298,10 @@ help:
         desc: Info bot
       - name: '!firebase'
         desc: Status Firebase
+      - name: '!vote'
+        desc: Vote on top.gg
+      - name: '!invite'
+        desc: Invite to your server
       - name: '!help'
         desc: Menu bantuan ini
     spreads:
@@ -405,121 +391,109 @@ botinfo:
   features_dict:
     cards:
       label: 🎴 78 kartu tarot detail
-      desc: 'Akses 78 kartu tarot lengkap dengan makna, kata kunci, penjelasan posisi,
-        dan orientasi (upright/reversed). Gunakan `!card [nama]` atau `/card [nama]`
-        untuk info lengkap satu kartu.
+      desc: 'Akses 78 kartu tarot lengkap dengan makna, kata kunci, penjelasan posisi, dan orientasi (upright/reversed). Gunakan
+        `!card [nama]` atau `/card [nama]` untuk info lengkap satu kartu.
 
         '
       short: 78 kartu tarot dengan makna, kata kunci, posisi, dan orientasi lengkap.
     commands:
       label: ⚡ Perintah prefix dan slash
-      desc: 'Bot mendukung dua gaya perintah: prefix `!command` (contoh `!tarot`)
-        dan slash `/command` (contoh `/tarot`). Keduanya memberikan hasil yang sama
-        — pilih yang kamu suka!
+      desc: 'Bot mendukung dua gaya perintah: prefix `!command` (contoh `!tarot`) dan slash `/command` (contoh `/tarot`).
+        Keduanya memberikan hasil yang sama — pilih yang kamu suka!
 
         '
       short: 'Dua gaya: prefix `!command` dan slash `/command`. Pilih favoritmu!'
     spreads:
       label: 📊 11 jenis spread berbeda
-      desc: 'Pilih dari 11 spread: one, two, three, four, five, six, seven, eight,
-        love, career, dan celtic. Masing-masing punya tata letak dan jumlah kartu
-        berbeda — dari 1 kartu sampai 10 kartu.
+      desc: 'Pilih dari 11 spread: one, two, three, four, five, six, seven, eight, love, career, dan celtic. Masing-masing
+        punya tata letak dan jumlah kartu berbeda — dari 1 kartu sampai 10 kartu.
 
         '
-      short: '11 spread: one, two, three, four, five, six, seven, eight, love, career,
-        celtic.'
+      short: '11 spread: one, two, three, four, five, six, seven, eight, love, career, celtic.'
     card_explain:
       label: 📖 Penjelasan lengkap setiap kartu
-      desc: 'Setiap kartu punya penjelasan detail berdasarkan posisi di spread dan
-        orientasi (upright/reversed). Makna per konteks (karier, cinta, spiritual)
-        juga tersedia.
+      desc: 'Setiap kartu punya penjelasan detail berdasarkan posisi di spread dan orientasi (upright/reversed). Makna per
+        konteks (karier, cinta, spiritual) juga tersedia.
 
         '
       short: Penjelasan detail per kartu, posisi, orientasi, dan konteks (karier/cinta).
     languages:
       label: 🌐 Dukungan multi-bahasa
-      desc: 'Bot mendukung 5 bahasa: 🇮🇩 Bahasa Indonesia (default), 🇬🇧 English, 🇵🇹
-        Português, 🇪🇸 Español, 🇩🇪 Deutsch. Ganti dengan `!language [kode]`, mis. `!language
-        en`.
+      desc: 'Bot mendukung 5 bahasa: 🇮🇩 Bahasa Indonesia (default), 🇬🇧 English, 🇵🇹 Português, 🇪🇸 Español, 🇩🇪 Deutsch. Ganti
+        dengan `!language [kode]`, mis. `!language en`.
 
         '
       short: '5 bahasa: 🇮🇩 🇬🇧 🇵🇹 🇪🇸 🇩🇪. Ganti pakai `!language [kode]`.'
     modes:
       label: 🎭 4 mode reading berbeda
-      desc: 'Pilih mode yang cocok: `simple` (ringkas), `deep` (mendalam), `gentle`
-        (lembut & suportif), atau `direct` (tegas & apa adanya). Ganti dengan `!mode
-        [mode]`.
+      desc: 'Pilih mode yang cocok: `simple` (ringkas), `deep` (mendalam), `gentle` (lembut & suportif), atau `direct` (tegas
+        & apa adanya). Ganti dengan `!mode [mode]`.
 
         '
       short: '4 mode: `simple`, `deep`, `gentle`, `direct`. Ganti pakai `!mode [mode]`.'
     ai_interpret:
       label: ✨ Interpretasi AI
-      desc: 'Interpretasi tambahan oleh AI (9Router). Kamu bisa pilih model AI yang
-        dipakai lewat `!aimodel [model_id]` atau `!aimodels` untuk lihat daftar. Nonaktifkan
-        dengan `!aioff`.
+      desc: 'Interpretasi tambahan oleh AI (9Router). Kamu bisa pilih model AI yang dipakai lewat `!aimodel [model_id]` atau
+        `!aimodels` untuk lihat daftar. Nonaktifkan dengan `!aioff`.
 
         '
       short: Interpretasi AI tambahan. Pilih model dengan `!aimodel`.
     daily:
       label: 📅 Reading harian
-      desc: 'Dapatkan satu kartu harian sebagai refleksi untuk hari ini. Cooldown
-        24 jam. Pakai `!daily` atau `/daily`.
+      desc: 'Dapatkan satu kartu harian sebagai refleksi untuk hari ini. Cooldown 24 jam. Pakai `!daily` atau `/daily`.
 
         '
       short: Satu kartu harian untuk refleksi. Cooldown 24 jam.
     weekly:
       label: 📆 Reading mingguan
-      desc: 'Dapatkan ringkasan 7 kartu untuk minggu ini. Cooldown 7 hari. Pakai `!weekly`
-        atau `/weekly`.
+      desc: 'Dapatkan ringkasan 7 kartu untuk minggu ini. Cooldown 7 hari. Pakai `!weekly` atau `/weekly`.
 
         '
       short: Ringkasan 7 kartu untuk minggu ini. Cooldown 7 hari.
     history:
       label: 💾 Riwayat & wawasan
-      desc: 'Semua reading tersimpan otomatis. Lihat dengan `!history` dan dapatkan
-        insight personal dari pola yang muncul.
+      desc: 'Semua reading tersimpan otomatis. Lihat dengan `!history` dan dapatkan insight personal dari pola yang muncul.
 
         '
       short: Semua reading tersimpan otomatis. Lihat dengan `!history`.
     images:
       label: 🖼️ Gambar & layout kartu
-      desc: 'Setiap kartu punya gambar asli (78 gambar unik dari Rider-Waite). Reading
-        otomatis generate gambar layout posisi Spread.
+      desc: 'Setiap kartu punya gambar asli (78 gambar unik dari Rider-Waite). Reading otomatis generate gambar layout posisi
+        Spread.
 
         '
       short: 78 gambar Rider-Waite + layout spread otomatis.
     search:
       label: 🔍 Pencarian kartu
-      desc: 'Cari kartu berdasarkan nama dengan `!card [nama]` atau `/card [nama]`.
-        Bisa juga cari via `!cards` untuk lihat daftar semua kartu.
+      desc: 'Cari kartu berdasarkan nama dengan `!card [nama]` atau `/card [nama]`. Bisa juga cari via `!cards` untuk lihat
+        daftar semua kartu.
 
         '
       short: Cari kartu by nama dengan `!card [nama]`.
     data_control:
       label: 🔒 Ekspor/hapus data
-      desc: 'Kamu pemilik data kamu. Ekspor semua data pribadi dengan `!export`, atau
-        hapus permanen dengan `!delete`. (Lokal & Firebase jika aktif.)
+      desc: 'Kamu pemilik data kamu. Ekspor semua data pribadi dengan `!export`, atau hapus permanen dengan `!delete`. (Lokal
+        & Firebase jika aktif.)
 
         '
       short: Kamu pemilik data. Ekspor `!export`, hapus `!delete`.
     journal:
       label: 📝 Jurnal refleksi
-      desc: 'Tambah catatan pribadi ke reading kamu dengan `!journal add [reading_id]
-        [catatan]`. Lihat semua dengan `!journal`. Refleksi membantu memperdalam insight.
+      desc: 'Tambah catatan pribadi ke reading kamu dengan `!journal add [reading_id] [catatan]`. Lihat semua dengan `!journal`.
+        Refleksi membantu memperdalam insight.
 
         '
       short: Catatan pribadi untuk reading. `!journal add [id] [catatan]`.
     privacy:
       label: 🔒 Mode privasi (DM)
-      desc: 'Untuk reading yang sensitif, pakai `!tarotdm` — bot akan DM kamu hasilnya,
-        tidak terlihat di server.
+      desc: 'Untuk reading yang sensitif, pakai `!tarotdm` — bot akan DM kamu hasilnya, tidak terlihat di server.
 
         '
       short: 'Mode DM untuk reading sensitif: `!tarotdm`.'
     cloud:
       label: ☁️ Firestore Cloud Storage
-      desc: 'Jika Firebase diaktifkan, data kamu otomatis disinkronkan ke Firestore
-        cloud — bisa diakses dari mana saja dan tetap aman.
+      desc: 'Jika Firebase diaktifkan, data kamu otomatis disinkronkan ke Firestore cloud — bisa diakses dari mana saja dan
+        tetap aman.
 
         '
       short: Sync otomatis ke Firestore cloud jika Firebase aktif.
@@ -577,16 +551,30 @@ reset_settings:
 invite:
   title: 🔗 Invite Tarot Bot
   desc: Tambahkan bot ini ke server kamu!
+  fields:
+    perms: 🔐 Izin yang Diperlukan
+    perms_value: '✅ Kirim pesan • 📎 Kirim file • 🔗 Embed link
+
+      ➕ Tambah reaksi • 📖 Baca history • 😀 Emoji eksternal'
+    benefits_title: ✨ Yang kamu dapat
+    benefits_value: '🔮 Unlimited tarot reading
+
+      📅 Daily & weekly draw
+
+      📊 Statistik personal
+
+      🌍 24 bahasa
+
+      ☁️ Sync Firebase opsional'
+    footer: Link hanya expired kalau Discord rotate client_id. Atur dengan /settings setelah add.
 favourite:
   no_history: � Tidak ada reading di history.
   favourited: ⭐ Reading `{reading_id}` ditandai favourite.
   unfavourited: ❌ Reading `{reading_id}` dihapus dari favourite.
   not_found: ❌ Reading `{reading_id}` tidak ditemukan.
 remind:
-  set_daily: ✅ Reminder harian diaktifkan untuk `{target}`. Kamu akan menerima notifikasi
-    setiap hari.
-  set_weekly: ✅ Reminder mingguan diaktifkan untuk `{target}`. Kamu akan menerima
-    notifikasi setiap minggu.
+  set_daily: ✅ Reminder harian diaktifkan untuk `{target}`. Kamu akan menerima notifikasi setiap hari.
+  set_weekly: ✅ Reminder mingguan diaktifkan untuk `{target}`. Kamu akan menerima notifikasi setiap minggu.
   'off': '''⏸️ Reminder untuk `{target}` dimatikan.'''
   replaced: '� Reminder untuk `{target}` diganti (sebelumnya: `{previous}`).'
   not_found: ❌ Kamu belum punya reminder. Gunakan `/remind set <target> <interval>`.
@@ -622,8 +610,7 @@ share:
   embed_footer: Dibagikan via /share • {reading_id_short}
 donate:
   title: ☕ Dukung Pengembang
-  desc: Kalau tarot bot ini bermanfaat untukmu, pertimbangkan untuk traktir kopi ☕
-    sebagai apresiasi.
+  desc: Kalau tarot bot ini bermanfaat untukmu, pertimbangkan untuk traktir kopi ☕ sebagai apresiasi.
   ko_fi: 🐰 Traktir via Ko-fi
   paypal: 💙 Traktir via PayPal
   custom_message: Terima kasih sudah menggunakan bot ini! 🙏
@@ -655,8 +642,7 @@ changelog:
 resetcooldown:
   title: ⏱️ Reset Cooldown
   desc_user: Cooldown untuk <@{user_id}> ({mention}) telah di-reset.
-  desc_user_all: ✅ Cooldown **daily + weekly** untuk <@{user_id}> ({mention}) telah
-    di-reset.
+  desc_user_all: ✅ Cooldown **daily + weekly** untuk <@{user_id}> ({mention}) telah di-reset.
   desc_user_daily: ✅ Cooldown **daily** untuk <@{user_id}> ({mention}) telah di-reset.
   desc_user_weekly: ✅ Cooldown **weekly** untuk <@{user_id}> ({mention}) telah di-reset.
   desc_server: ✅ Semua cooldown di server ini telah di-reset ({count} user).
@@ -665,3 +651,14 @@ resetcooldown:
   invalid_kind: '⚠️ Jenis cooldown tidak valid. Pilih: `daily`, `weekly`, atau `all`.'
   invalid_target: ⚠️ Target tidak valid. Pilih user yang ingin di-reset cooldownnya.
   footer: Dilakukan oleh {admin} • {kind} cooldown
+vote:
+  title: 🗳️ Vote Tarot Bot di top.gg
+  desc: Dukung bot dengan vote gratis di top.gg — cuma butuh beberapa detik dan bantu kami lebih banyak ditemukan.
+  thanks: 💜 Terima kasih atas dukungannya
+  rewards: '• Membantu kami naik di chart top.gg
+
+    • Membuka fitur eksklusif supporter di masa depan
+
+    • Gratis — cukup klik setiap 12 jam'
+  footer: top.gg memberlakukan cooldown 12 jam antar vote.
+  button: Vote di top.gg

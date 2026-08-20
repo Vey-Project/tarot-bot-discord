@@ -77,6 +77,14 @@ DONATE_KOFI_URL = os.getenv("DONATE_KOFI_URL", "https://ko-fi.com/vv3yy")
 DONATE_PAYPAL_URL = os.getenv("DONATE_PAYPAL_URL", "")
 DONATE_MESSAGE = os.getenv("DONATE_MESSAGE", "")
 
+# External listing / vote links (top.gg etc.)
+TOPGG_VOTE_URL = os.getenv(
+    "TOPGG_VOTE_URL",
+    "https://top.gg/bot/1458047428711153716/vote",
+)
+TOPGG_BOT_ID = os.getenv("TOPGG_BOT_ID", "1458047428711153716")
+TOPGG_TOKEN = os.getenv("TOPGG_TOKEN", "")  # optional, for auto-posting vote webhook
+
 # Project metadata (used by /source)
 REPO_URL = os.getenv("REPO_URL", "https://github.com/Vey-Project/tarot-bot-discord")
 LICENSE_NAME = os.getenv("LICENSE_NAME", "MIT License")

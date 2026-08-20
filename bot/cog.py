@@ -49,6 +49,8 @@ from .config import (
     SAVES_DIR,
     SETTINGS_DIR,
     TAROT_CARDS,
+    TOPGG_BOT_ID,
+    TOPGG_VOTE_URL,
 )
 from .firebase_service import firebase_service
 from .image_gen import CardImageGenerator
@@ -2673,12 +2675,47 @@ class TarotSystem(commands.Cog):
             self.bot.user.id,
             permissions=permissions,
         )
+        # Permission bit value shown alongside the list (informational only;
+        # the actual scope is encoded in the URL).
+        perms_value = int(permissions.value)
         embed = discord.Embed(
             title=_("invite.title", lang=language),
-            description=f"{_('invite.desc', lang=language)}\n{url}",
+            description=_("invite.desc", lang=language),
             color=discord.Color.gold(),
+            url=url,
         )
-        await ctx.send(embed=embed)
+        embed.add_field(
+            name=_("invite.fields.perms", lang=language),
+            value=_("invite.fields.perms_value", lang=language),
+            inline=False,
+        )
+        embed.add_field(
+            name=_("invite.fields.benefits_title", lang=language),
+            value=_("invite.fields.benefits_value", lang=language),
+            inline=False,
+        )
+        embed.add_field(
+            name="🔗 Link",
+            value=f"[Click to invite]({url})",
+            inline=False,
+        )
+        embed.set_footer(text=_("invite.fields.footer", lang=language))
+        # View with the invite button + a vote button so users who arrive
+        # here have a one-click path to supporting the bot on top.gg.
+        view = discord.ui.View()
+        view.add_item(discord.ui.Button(
+            label=_("invite.title", lang=language),
+            style=discord.ButtonStyle.link,
+            url=url,
+            emoji="🔗",
+        ))
+        view.add_item(discord.ui.Button(
+            label=_("vote.title", lang=language),
+            style=discord.ButtonStyle.link,
+            url=TOPGG_VOTE_URL,
+            emoji="🗳️",
+        ))
+        await ctx.send(embed=embed, view=view)
 
     @commands.hybrid_command(
         name='favourite',
@@ -2878,6 +2915,37 @@ class TarotSystem(commands.Cog):
             await ctx.send(embed=embed, view=view)
         else:
             await ctx.send(embed=embed)
+
+    @commands.hybrid_command(
+        name='vote',
+        description='🗳️ Vote for this bot on top.gg to support development',
+    )
+    async def vote_command(self, ctx):
+        """Show the top.gg vote link and a thank-you message.
+
+        No state is tracked here — top.gg itself enforces the 12h vote
+        cooldown. We just deep-link to the listing.
+        """
+        language = self._resolve_lang(ctx)
+        embed = discord.Embed(
+            title=_("vote.title", lang=language),
+            description=_("vote.desc", lang=language),
+            color=0xff3366,  # top.gg-ish pink
+        )
+        embed.add_field(
+            name=_("vote.thanks", lang=language),
+            value=_("vote.rewards", lang=language),
+            inline=False,
+        )
+        embed.set_footer(text=_("vote.footer", lang=language))
+        view = discord.ui.View(timeout=None)
+        view.add_item(discord.ui.Button(
+            style=discord.ButtonStyle.link,
+            label=_("vote.button", lang=language),
+            url=TOPGG_VOTE_URL,
+            emoji="🗳️",
+        ))
+        await ctx.send(embed=embed, view=view)
 
     @commands.hybrid_command(
         name='source',

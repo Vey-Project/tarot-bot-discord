@@ -1,29 +1,21 @@
-# Locale: es-419 (Español (Latinoamérica))
-# Source: locales/en.yml (English). All values copied from en and not yet
-# reviewed by a native speaker — please verify before release.
-# Only `aimodels.more_models` is overridden. Missing keys fall back to en → id.
-
 errors:
-  admin_only: '🔒 This command is restricted to bot admins. Your user ID: `{user_id}`.
-    Contact the bot owner if you believe this is a mistake.'
+  admin_only: '🔒 This command is restricted to bot admins. Your user ID: `{user_id}`. Contact the bot owner if you believe
+    this is a mistake.'
 tarot:
   question_prompt: What would you like to reflect on today?
   spread_prompt: Choose a tarot spread
   spread_unknown: '❌ Unknown spread type. Available spreads:
 
-    `single`, `three`, `celtic`, `relationship`, `career`, `yesno`, `weekly`, `love`,
-    `decision`, `selfcare`, `shadow`
+    `single`, `three`, `celtic`, `relationship`, `career`, `yesno`, `weekly`, `love`, `decision`, `selfcare`, `shadow`
 
 
     Example: `!tarot three Will I find love this year?`'
-  spread_confirm: ⚠️ This spread uses {count} cards and may take a moment. Proceed?
-    (React ✅ within 30 seconds)
+  spread_confirm: ⚠️ This spread uses {count} cards and may take a moment. Proceed? (React ✅ within 30 seconds)
   spread_timeout: ⏰ Spread selection timed out.
   spread_menu_title: 🔮 Choose Your Tarot Spread
   spread_menu_desc: 'Select a spread type by reacting below:'
   spread_menu_howto: How to Use
-  spread_menu_howto_desc: React with the corresponding emoji or type `!tarot [spread]
-    [question]`
+  spread_menu_howto_desc: React with the corresponding emoji or type `!tarot [spread] [question]`
   spread_menu_example: 'Example: !tarot three Will I find success in my new job?'
   spread_menu_footer: Choose a spread
   saved_to_history: ✅ Reading `{reading_id}` has been saved to your history.
@@ -36,8 +28,7 @@ tarot:
     footer: Reading ID
   detail_embed:
     title: 📖 Detailed Card Explanations
-    description: Complete explanation of each card based on position, orientation,
-      and theme.
+    description: Complete explanation of each card based on position, orientation, and theme.
     footer: Reading ID
   card_images:
     header: '**🃏 Card Images:**'
@@ -72,7 +63,9 @@ aimodels:
   description: Select a model for tarot interpretation.
   recommended: 'Recommended: `kr/claude-sonnet-4.5` (default, high quality)'
   footer: Select with `!aimodel [model_id]`
-  more_models: "\n... y {count} modelos más"
+  more_models: '
+
+    ... y {count} modelos más'
 aimodel:
   current: '📌 Current AI model: `{model}`'
   changed: '✅ AI model changed to: `{model}`'
@@ -96,8 +89,7 @@ ai_status:
 
     Continuation limit: `{limit}`'
   disabled_detail: Set `NINE_ROUTER_ENABLED=true` in `.env` to enable AI.
-  not_configured_detail: Add `NINE_ROUTER_API_KEY=sk-your-key-here` to `.env` or enable
-    9Router.
+  not_configured_detail: Add `NINE_ROUTER_API_KEY=sk-your-key-here` to `.env` or enable 9Router.
   footer: Local explanations work without AI.
   user_enabled: 'AI for user: **{status}**'
   user_setting_on: 'On'
@@ -108,8 +100,7 @@ ai_interpretation:
   footer: Reading ID
   generating: ✨ Generating AI interpretation...
   silent_skip: ✨
-  truncated: ⚠️ AI interpretation still hit the output length limit. Increase `NINE_ROUTER_MAX_OUTPUT_TOKENS`
-    in `.env`.
+  truncated: ⚠️ AI interpretation still hit the output length limit. Increase `NINE_ROUTER_MAX_OUTPUT_TOKENS` in `.env`.
 language:
   current: '🌐 Your current language: **{lang_code}**
 
@@ -174,8 +165,7 @@ journal:
     **Note:** {2}'
   reflection:
     title: 📝 Reflection Journal
-    prompt: 'Write your reflection notes for this reading. Send a message with `!journal
-      add {id}` followed by your note.
+    prompt: 'Write your reflection notes for this reading. Send a message with `!journal add {id}` followed by your note.
 
       Example: `!journal add {id} This is my reflection...`'
     cancel: ⏰ Time's up. You can add a note later with `!journal add {id} [note]`.
@@ -195,15 +185,12 @@ insight:
   description: 'Based on your tarot reading history:'
   favorite: Favorite Spread
   favorite_desc: You most often use the `{0}` spread ({1} times).
-  reversed: 'Pattern: Many reversed cards ({0:.0f}%) indicate you''re facing internal
-    challenges or blocked energy.'
-  upright: 'Pattern: Most cards upright ({0:.0f}%) show clear, open energy expression
-    in your life.'
+  reversed: 'Pattern: Many reversed cards ({0:.0f}%) indicate you''re facing internal challenges or blocked energy.'
+  upright: 'Pattern: Most cards upright ({0:.0f}%) show clear, open energy expression in your life.'
   frequent: Frequently Drawn Cards
-  frequent_desc: '{0} frequently appears in your readings. This is an important theme
-    in your life journey.'
-  commitment: 'Commitment: With over 10 readings, you''re developing a strong connection
-    with tarot wisdom. Consider writing your insights in a journal.'
+  frequent_desc: '{0} frequently appears in your readings. This is an important theme in your life journey.'
+  commitment: 'Commitment: With over 10 readings, you''re developing a strong connection with tarot wisdom. Consider writing
+    your insights in a journal.'
   statistics: 📊 Statistics
   statistics_desc: '• Total readings: **{0}**
 
@@ -232,45 +219,36 @@ cards:
   pentacles: 🃏 Pentacles Suit Cards
   all: 🃏 Complete Tarot Deck
   overview: 🃏 Tarot Deck Overview
-  error: '❌ Invalid category. Use: `major`, `wands`, `cups`, `swords`, `pentacles`,
-    or `all`'
+  error: '❌ Invalid category. Use: `major`, `wands`, `cups`, `swords`, `pentacles`, or `all`'
   no_cards: ❌ No cards found in this category.
   page_footer: Page {current}/{total} • React to navigate
 help:
   title: 🔮 Tarot Bot Help Menu
   description: Learn how to use the tarot bot''s features
   main: 🃏 MAIN COMMANDS
-  main_desc: '`!tarot [spread] [question]` - Get a reading `!card [name]` - Card details
-    `!cards [category]` - List cards `!daily` - Your daily card `!weekly` - Weekly
-    reading `!tarotdm [spread] [question]` - Reading via DM `!history [number]` -
-    Past readings `!insight` - Personal insights `!journal add [id] [note]` - Add
-    journal entry `!journal` - View journal `!exportdata` - Export data `!deletedata
-    confirm` - Delete data `!language [id/en]` - Change language `!mode [simple/deep/gentle/direct]`
-    - Change mode `!aimodels` - List AI models `!aimodel [model_id]` - Select AI model
-    `!aion` / `!aioff` - Enable/disable AI `!aistatus` - AI status `!botinfo` - Bot
-    info `!firebase` - Firebase status `!help` - This help menu'
+  main_desc: '`!tarot [spread] [question]` - Get a reading `!card [name]` - Card details `!cards [category]` - List cards
+    `!daily` - Your daily card `!weekly` - Weekly reading `!tarotdm [spread] [question]` - Reading via DM `!history [number]`
+    - Past readings `!insight` - Personal insights `!journal add [id] [note]` - Add journal entry `!journal` - View journal
+    `!exportdata` - Export data `!deletedata confirm` - Delete data `!language [id/en]` - Change language `!mode [simple/deep/gentle/direct]`
+    - Change mode `!aimodels` - List AI models `!aimodel [model_id]` - Select AI model `!aion` / `!aioff` - Enable/disable
+    AI `!aistatus` - AI status `!botinfo` - Bot info `!firebase` - Firebase status `!help` - This help menu'
   spreads: 📊 SPREAD TYPES
-  spreads_desc: • `single` - 1 card, quick guidance • `three` - 3 cards, past-present-future
-    • `celtic` - 10 cards, comprehensive reading • `relationship` - 5 cards, relationship
-    dynamics • `career` - 6 cards, career path • `yesno` - 3 cards, yes/no guidance
-    • `weekly` - 5 cards, weekly guidance • `love` - 6 cards, love insights • `decision`
-    - 5 cards, decision help • `selfcare` - 5 cards, self-care • `shadow` - 5 cards,
-    shadow work
+  spreads_desc: • `single` - 1 card, quick guidance • `three` - 3 cards, past-present-future • `celtic` - 10 cards, comprehensive
+    reading • `relationship` - 5 cards, relationship dynamics • `career` - 6 cards, career path • `yesno` - 3 cards, yes/no
+    guidance • `weekly` - 5 cards, weekly guidance • `love` - 6 cards, love insights • `decision` - 5 cards, decision help
+    • `selfcare` - 5 cards, self-care • `shadow` - 5 cards, shadow work
   modes: 🎭 READING MODES
-  modes_desc: • `simple` - Concise and easy to understand • `deep` - Detailed interpretation
-    • `gentle` - Gentle tone • `direct` - Direct answers
+  modes_desc: • `simple` - Concise and easy to understand • `deep` - Detailed interpretation • `gentle` - Gentle tone • `direct`
+    - Direct answers
   cards: 🎴 CARD CATEGORIES
-  cards_desc: • `major` - Major Arcana (22 cards) • `wands` - Wands suit (14 cards)
-    • `cups` - Cups suit (14 cards) • `swords` - Swords suit (14 cards) • `pentacles`
-    - Pentacles suit (14 cards) • `all` - Complete deck (78 cards)
+  cards_desc: • `major` - Major Arcana (22 cards) • `wands` - Wands suit (14 cards) • `cups` - Cups suit (14 cards) • `swords`
+    - Swords suit (14 cards) • `pentacles` - Pentacles suit (14 cards) • `all` - Complete deck (78 cards)
   examples: 💡 EXAMPLES
-  examples_desc: • `!tarot three Will I find love?` • `!card The Fool` • `!cards major`
-    • `!tarot relationship` • `!daily` • `!weekly` • `!language en` • `!mode deep`
-    • `!aimodel kr/claude-sonnet-4.5` • `!tarotdm three Secret question`
+  examples_desc: • `!tarot three Will I find love?` • `!card The Fool` • `!cards major` • `!tarot relationship` • `!daily`
+    • `!weekly` • `!language en` • `!mode deep` • `!aimodel kr/claude-sonnet-4.5` • `!tarotdm three Secret question`
   tips: 💭 TIPS FOR BETTER READINGS
-  tips_desc: • Focus your question before asking • Keep an open mind to interpretations
-    • Use different spreads for different needs • Review your history for patterns
-    • Tarot reflects possibilities, not certainties
+  tips_desc: • Focus your question before asking • Keep an open mind to interpretations • Use different spreads for different
+    needs • Review your history for patterns • Tarot reflects possibilities, not certainties
   footer_text: Tarot is a mirror to your subconscious • Be patient with the journey
   category_dict:
     commands:
@@ -316,6 +294,10 @@ help:
         desc: Bot info
       - name: '!firebase'
         desc: Firebase status
+      - name: '!vote'
+        desc: Vote on top.gg
+      - name: '!invite'
+        desc: Invite to your server
       - name: '!help'
         desc: This help menu
     spreads:
@@ -405,63 +387,56 @@ botinfo:
   features_dict:
     cards:
       label: 🎴 78 detailed tarot cards
-      desc: 'Access 78 full tarot cards with meanings, keywords, position-specific
-        explanations, and orientation (upright/reversed). Use `!card [name]` or `/card
-        [name]` for full info on one card.
+      desc: 'Access 78 full tarot cards with meanings, keywords, position-specific explanations, and orientation (upright/reversed).
+        Use `!card [name]` or `/card [name]` for full info on one card.
 
         '
       short: 78 full cards with meanings, keywords, positions, and orientation.
     commands:
       label: ⚡ Prefix and slash commands
-      desc: 'The bot supports two command styles: prefix `!command` (e.g. `!tarot`)
-        and slash `/command` (e.g. `/tarot`). Both work the same — pick what you prefer!
+      desc: 'The bot supports two command styles: prefix `!command` (e.g. `!tarot`) and slash `/command` (e.g. `/tarot`).
+        Both work the same — pick what you prefer!
 
         '
       short: 'Two styles: prefix `!command` and slash `/command`. Pick your fav!'
     spreads:
       label: 📊 11 different spread types
-      desc: 'Choose from 11 spreads: one, two, three, four, five, six, seven, eight,
-        love, career, and celtic. Each has a unique layout and card count — from 1
-        card to 10 cards.
+      desc: 'Choose from 11 spreads: one, two, three, four, five, six, seven, eight, love, career, and celtic. Each has a
+        unique layout and card count — from 1 card to 10 cards.
 
         '
-      short: '11 spreads: one, two, three, four, five, six, seven, eight, love, career,
-        celtic.'
+      short: '11 spreads: one, two, three, four, five, six, seven, eight, love, career, celtic.'
     card_explain:
       label: 📖 Full card explanations
-      desc: 'Every card has a detailed explanation based on its position in the spread
-        and orientation (upright/reversed). Context meanings (career, love, spiritual)
-        are also available.
+      desc: 'Every card has a detailed explanation based on its position in the spread and orientation (upright/reversed).
+        Context meanings (career, love, spiritual) are also available.
 
         '
       short: Detailed per-card explanation by position, orientation, and context.
     languages:
       label: 🌐 Multi-language support
-      desc: 'Bot supports 5 languages: 🇮🇩 Bahasa Indonesia (default), 🇬🇧 English,
-        🇵🇹 Português, 🇪🇸 Español, 🇩🇪 Deutsch. Switch with `!language [code]`, e.g.
-        `!language id`.
+      desc: 'Bot supports 5 languages: 🇮🇩 Bahasa Indonesia (default), 🇬🇧 English, 🇵🇹 Português, 🇪🇸 Español, 🇩🇪 Deutsch. Switch
+        with `!language [code]`, e.g. `!language id`.
 
         '
       short: '5 languages: 🇮🇩 🇬🇧 🇵🇹 🇪🇸 🇩🇪. Switch with `!language [code]`.'
     modes:
       label: 🎭 4 reading modes
-      desc: 'Pick the mode that fits: `simple` (concise), `deep` (thorough), `gentle`
-        (soft & supportive), or `direct` (straightforward & no-nonsense). Switch with
-        `!mode [mode]`.
+      desc: 'Pick the mode that fits: `simple` (concise), `deep` (thorough), `gentle` (soft & supportive), or `direct` (straightforward
+        & no-nonsense). Switch with `!mode [mode]`.
 
         '
       short: '4 modes: `simple`, `deep`, `gentle`, `direct`. Switch with `!mode [mode]`.'
     ai_interpret:
       label: ✨ AI interpretation
-      desc: 'Extra interpretation by AI (9Router). You can pick the AI model with
-        `!aimodel [model_id]` or `!aimodels` to see the list. Turn it off with `!aioff`.
+      desc: 'Extra interpretation by AI (9Router). You can pick the AI model with `!aimodel [model_id]` or `!aimodels` to
+        see the list. Turn it off with `!aioff`.
 
         '
       short: Extra AI interpretation. Pick model with `!aimodel`.
     daily:
       label: 📅 Daily readings
-      desc: 'Get one daily card for reflection. 24-hour cooldown. Use `!daily` or
-        `/daily`.
+      desc: 'Get one daily card for reflection. 24-hour cooldown. Use `!daily` or `/daily`.
 
         '
       short: One daily card for reflection. 24h cooldown.
@@ -473,50 +448,46 @@ botinfo:
       short: 7-card weekly summary. 7-day cooldown.
     history:
       label: 💾 History & insights
-      desc: 'All readings are saved automatically. View with `!history` and get personal
-        insights from the patterns that emerge.
+      desc: 'All readings are saved automatically. View with `!history` and get personal insights from the patterns that emerge.
 
         '
       short: All readings saved automatically. View with `!history`.
     images:
       label: 🖼️ Card images & layouts
-      desc: 'Every card has its own image (78 unique Rider-Waite images). Readings
-        auto-generate layout images showing each card in its spread position.
+      desc: 'Every card has its own image (78 unique Rider-Waite images). Readings auto-generate layout images showing each
+        card in its spread position.
 
         '
       short: 78 Rider-Waite images + automatic spread layouts.
     search:
       label: 🔍 Card search
-      desc: 'Find a card by name with `!card [name]` or `/card [name]`. You can also
-        use `!cards` to see the full list.
+      desc: 'Find a card by name with `!card [name]` or `/card [name]`. You can also use `!cards` to see the full list.
 
         '
       short: Find cards by name with `!card [name]`.
     data_control:
       label: 🔒 Export/delete data
-      desc: 'You own your data. Export all personal data with `!export`, or permanently
-        delete it with `!delete`. (Local & Firebase if enabled.)
+      desc: 'You own your data. Export all personal data with `!export`, or permanently delete it with `!delete`. (Local &
+        Firebase if enabled.)
 
         '
       short: You own your data. Export `!export`, delete `!delete`.
     journal:
       label: 📝 Reflection journal
-      desc: 'Add personal notes to your readings with `!journal add [reading_id] [note]`.
-        View all with `!journal`. Reflection deepens insight.
+      desc: 'Add personal notes to your readings with `!journal add [reading_id] [note]`. View all with `!journal`. Reflection
+        deepens insight.
 
         '
       short: Personal notes for readings. `!journal add [id] [note]`.
     privacy:
       label: 🔒 Privacy mode (DM)
-      desc: 'For sensitive readings, use `!tarotdm` — the bot DMs you the result,
-        not visible in the server.
+      desc: 'For sensitive readings, use `!tarotdm` — the bot DMs you the result, not visible in the server.
 
         '
       short: 'DM mode for sensitive readings: `!tarotdm`.'
     cloud:
       label: ☁️ Firestore Cloud Storage
-      desc: 'If Firebase is enabled, your data auto-syncs to Firestore cloud — accessible
-        from anywhere and kept secure.
+      desc: 'If Firebase is enabled, your data auto-syncs to Firestore cloud — accessible from anywhere and kept secure.
 
         '
       short: Auto-sync to Firestore cloud if Firebase is enabled.
@@ -574,6 +545,22 @@ reset_settings:
 invite:
   title: 🔗 Invite Tarot Bot
   desc: Add this bot to your server!
+  fields:
+    perms: 🔐 Permisos Requeridos
+    perms_value: '✅ Enviar mensajes • 📎 Adjuntar archivos • 🔗 Embeds
+
+      ➕ Añadir reacciones • 📖 Leer historial • 😀 Emojis externos'
+    benefits_title: ✨ Lo que obtienes
+    benefits_value: '🔮 Lecturas de tarot ilimitadas
+
+      📅 Daily & weekly draws
+
+      📊 Estadísticas personales
+
+      🌍 24 idiomas
+
+      ☁️ Sync Firebase opcional'
+    footer: El enlace solo expira si Discord rota el client_id. Usa /settings tras añadir.
 favourite:
   no_history: � No readings in history.
   favourited: ⭐ Reading `{reading_id}` marked as favourite.
@@ -581,8 +568,7 @@ favourite:
   not_found: ❌ Reading `{reading_id}` not found.
 remind:
   set_daily: ✅ Daily reminder enabled for `{target}`. You will be notified every day.
-  set_weekly: ✅ Weekly reminder enabled for `{target}`. You will be notified every
-    week.
+  set_weekly: ✅ Weekly reminder enabled for `{target}`. You will be notified every week.
   'off': '''⏸️ Reminder for `{target}` disabled.'''
   replaced: '� Reminder for `{target}` replaced (was: `{previous}`).'
   not_found: ❌ You don't have a reminder yet. Use `/remind set <target> <interval>`.
@@ -595,8 +581,7 @@ remind:
   paused: �️ Reminder for `{target}` paused.
   resumed: ▶️ Reminder for `{target}` resumed.
   fired_dm: 🔔 Hey! Time for **{target}**. Type `/tarot` whenever you're ready!
-  fired_channel: 🔔 <@{user_id}>! Time for **{target}**. Type `/tarot` whenever you're
-    ready!
+  fired_channel: 🔔 <@{user_id}>! Time for **{target}**. Type `/tarot` whenever you're ready!
   next_at: next in {time}
   disabled: ⏸️ (disabled)
   targets:
@@ -619,8 +604,7 @@ share:
   embed_footer: Shared via /share • {reading_id_short}
 donate:
   title: ☕ Support the Developer
-  desc: If this tarot bot brightens your day, consider buying me a coffee ☕ to show
-    appreciation.
+  desc: If this tarot bot brightens your day, consider buying me a coffee ☕ to show appreciation.
   ko_fi: 🐰 Tip via Ko-fi
   paypal: 💙 Tip via PayPal
   custom_message: Thanks for using this bot! 🙏
@@ -652,8 +636,7 @@ changelog:
 resetcooldown:
   title: ⏱️ Reset Cooldown
   desc_user: Cooldown for <@{user_id}> ({mention}) has been reset.
-  desc_user_all: ✅ **Daily + weekly** cooldown for <@{user_id}> ({mention}) has been
-    reset.
+  desc_user_all: ✅ **Daily + weekly** cooldown for <@{user_id}> ({mention}) has been reset.
   desc_user_daily: ✅ **Daily** cooldown for <@{user_id}> ({mention}) has been reset.
   desc_user_weekly: ✅ **Weekly** cooldown for <@{user_id}> ({mention}) has been reset.
   desc_server: ✅ All cooldowns in this server have been reset ({count} users).
@@ -662,3 +645,14 @@ resetcooldown:
   invalid_kind: '⚠️ Invalid cooldown kind. Choose: `daily`, `weekly`, or `all`.'
   invalid_target: ⚠️ Invalid target. Choose a user whose cooldown you want to reset.
   footer: Performed by {admin} • {kind} cooldown
+vote:
+  title: 🗳️ Vote for Tarot Bot on top.gg
+  desc: Support the bot with a free vote on top.gg — it only takes a few seconds and helps more people find us.
+  thanks: 💜 Thank you for the support
+  rewards: '• Helps us climb the top.gg charts
+
+    • Unlocks future supporter-only features
+
+    • Costs nothing — just a click every 12h'
+  footer: top.gg enforces a 12-hour cooldown between votes.
+  button: Vote on top.gg
