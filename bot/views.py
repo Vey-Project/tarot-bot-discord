@@ -7,6 +7,19 @@ import discord.ui as _discord_ui
 
 from bot_i18n import get as _get, t as _
 
+# Discord SelectOption.description is capped at 100 chars and the API rejects
+# longer values with HTTP 400 — features_dict.<key>.short is human-authored
+# text and easily blows past the limit. Truncate defensively rather than
+# trust every locale.
+_DISCORD_SELECT_DESC_MAX = 100
+
+
+def _clip(text: str, limit: int = _DISCORD_SELECT_DESC_MAX) -> str:
+    """Trim ``text`` to fit Discord's SelectOption.description cap."""
+    if len(text) <= limit:
+        return text
+    return text[: limit - 1] + "\u2026"
+
 
 class FeatureView(_discord_ui.View):
     """Dropdown menu showing all bot features. Users pick one to see details."""
@@ -24,7 +37,7 @@ class FeatureView(_discord_ui.View):
             options.append(
                 discord.SelectOption(
                     label=ftr["label"],
-                    description=ftr.get("short", ftr["desc"][:100]),
+                    description=_clip(ftr.get("short") or ftr.get("desc", "")[:100]),
                     value=key,
                     emoji=None,
                 )
