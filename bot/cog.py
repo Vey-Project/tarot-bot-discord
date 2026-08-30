@@ -452,6 +452,49 @@ class TarotSystem(commands.Cog):
         if reading.is_weekly:
             self.user_weekly_cooldown[reading.user_id] = reading.timestamp
 
+        self._schedule_firebase_sync(reading)
+
+    def _schedule_firebase_sync(self, reading: TarotReading) -> None:
+        """Fire-and-forget push of a single reading to Firebase.
+
+        Called from :meth:`_remember_reading` so every new reading is mirrored
+        to Firestore the moment it's stored locally. No-op when Firebase is
+        disabled or the SDK isn't installed.
+        """
+        if not firebase_service.is_enabled():
+            return
+        # Mirror the payload shape produced by TarotReading.save_to_history so
+        # Firestore docs carry the same fields (cards, is_daily, is_weekly, ...)
+        # as the local readings.json — to_history_entry() drops them.
+        payload = {
+            "reading_id": reading.reading_id,
+            "user_id": str(reading.user_id),
+            "timestamp": reading.timestamp.isoformat(),
+            "spread_type": reading.spread_type,
+            "question": reading.question,
+            "is_daily": reading.is_daily,
+            "is_weekly": reading.is_weekly,
+            "language": reading.language,
+            "mode": reading.mode,
+            "favourite": reading.is_favourite,
+            "cards": [
+                {
+                    "name": card.name,
+                    "orientation": card.orientation.value,
+                    "position": position,
+                }
+                for card, position in zip(reading.cards, reading.positions)
+            ],
+        }
+
+        async def _push() -> None:
+            try:
+                await firebase_service.async_save_reading(payload, reading.user_id)
+            except Exception as e:  # safe_task already logs, this is belt-and-suspenders
+                logger.error("Firebase auto-sync failed for %s: %s", reading.reading_id, e)
+
+        _safe_task(_push(), name=f"firebase-auto-sync-{reading.reading_id[:8]}")
+
     def _count_user_readings(self, user_id: int) -> int:
         """How many readings a user has. Reads from the in-memory index."""
         return len(self.user_history.get(user_id, []))
