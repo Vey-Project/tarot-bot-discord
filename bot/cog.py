@@ -499,6 +499,30 @@ class TarotSystem(commands.Cog):
         """How many readings a user has. Reads from the in-memory index."""
         return len(self.user_history.get(user_id, []))
 
+    @staticmethod
+    async def _safe_add_reaction(message: discord.Message, emoji: str) -> bool:
+        """Add a reaction, swallowing Missing Access / Not Found.
+
+        Discord returns 50001 (Missing Access) in DMs (no reactions) and in
+        guild channels where the bot lacks Add Reactions. Without this guard
+        a single reaction-add failure crashes the whole command and leaves
+        the bot with no menu / no reading-marking buttons.
+        """
+        try:
+            await message.add_reaction(emoji)
+            return True
+        except (discord.Forbidden, discord.HTTPException) as e:
+            logger.debug("add_reaction(%r) failed on msg %d: %s", emoji, message.id, e)
+            return False
+
+    @staticmethod
+    async def _safe_clear_reactions(message: discord.Message) -> None:
+        """Clear reactions, swallowing Missing Access / Not Found."""
+        try:
+            await message.clear_reactions()
+        except (discord.Forbidden, discord.HTTPException) as e:
+            logger.debug("clear_reactions failed on msg %d: %s", message.id, e)
+
     def _set_favourite(self, user_id: int, reading_id: str, value: bool = True) -> bool:
         """Toggle the favourite flag on a reading entry. Returns True if a row was updated.
 
@@ -1144,9 +1168,9 @@ class TarotSystem(commands.Cog):
                         await ctx.send(embed=card_embed, file=file)
                         await asyncio.sleep(0.5)
 
-            await reading_msg.add_reaction("💾")
-            await reading_msg.add_reaction("📖")
-            await reading_msg.add_reaction("📝")
+            await self._safe_add_reaction(reading_msg, "💾")
+            await self._safe_add_reaction(reading_msg, "📖")
+            await self._safe_add_reaction(reading_msg, "📝")
             _safe_task(
                 self._handle_reading_reactions(ctx, reading_msg, reading),
                 name=f"reading-reactions-{reading.reading_id[:8]}",
@@ -1201,7 +1225,7 @@ class TarotSystem(commands.Cog):
 
         for i, reaction in enumerate(reactions):
             if i < len(spread_keys):
-                await menu_msg.add_reaction(reaction)
+                await self._safe_add_reaction(menu_msg, reaction)
 
         def check(reaction, user):
             return (
@@ -1543,7 +1567,7 @@ class TarotSystem(commands.Cog):
         msg = await ctx.send(embed=embed)
 
         for reaction in reactions[:len(selectable_cards)]:
-            await msg.add_reaction(reaction)
+            await self._safe_add_reaction(msg, reaction)
 
         def check(reaction, user):
             return (
@@ -1643,7 +1667,7 @@ class TarotSystem(commands.Cog):
         else:
             msg = await ctx.send(embed=embed)
 
-        await msg.add_reaction("🔄")
+        await self._safe_add_reaction(msg, "🔄")
 
         def check(reaction, user):
             return (
@@ -1775,8 +1799,8 @@ class TarotSystem(commands.Cog):
         msg = await ctx.send(embed=embed)
 
         if len(pages) > 1:
-            await msg.add_reaction("⬅️")
-            await msg.add_reaction("➡️")
+            await self._safe_add_reaction(msg, "⬅️")
+            await self._safe_add_reaction(msg, "➡️")
 
             current_page = 0
 
