@@ -841,12 +841,32 @@ class TarotSystem(commands.Cog):
             data = self._load_readings_file()
             readings = data.get("readings", [])
 
+            created = skipped = quota = 0
             for reading in readings:
-                user_id = int(reading.get("user_id", 0))
-                if user_id:
-                    await firebase_service.async_save_reading(reading, user_id)
+                raw_uid = reading.get("user_id", 0)
+                try:
+                    user_id = int(raw_uid) if raw_uid not in (None, "") else 0
+                except (TypeError, ValueError):
+                    user_id = 0
+                if not user_id:
+                    continue
+                # Idempotent: skip readings already in Firestore. This stops
+                # the bot from blowing its daily write quota on every restart
+                # when the local file already mirrors the cloud copy.
+                result = await firebase_service.async_save_reading_if_absent(reading, user_id)
+                if result == "created":
+                    created += 1
+                elif result == "exists":
+                    skipped += 1
+                elif result == "quota":
+                    quota += 1
+                    break  # no point continuing — quota is dead for the day
+                # else "error" — keep going, log already emitted inside the service
 
-            logger.info(f"Synced {len(readings)} readings to Firebase")
+            logger.info(
+                f"Firebase sync: {created} created, {skipped} already present, "
+                f"{quota} stopped (quota)"
+            )
         except Exception as e:
             logger.error(f"Failed to sync to Firebase: {e}")
 

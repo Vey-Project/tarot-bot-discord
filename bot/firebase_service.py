@@ -101,8 +101,65 @@ class FirebaseService:
             logger.info(f"Reading {reading_id} saved to Firebase")
             return True
         except Exception as e:
-            logger.error(f"Failed to save reading to Firebase: {e}")
+            # Quota errors: surface clearly so the bot can stop trying for the
+            # rest of the session — otherwise the auto-sync loop drains the
+            # whole daily Spark budget in seconds.
+            msg = str(e)
+            if "RESOURCE_EXHAUSTED" in msg or "gone over" in msg.lower() or "429" in msg:
+                logger.warning(
+                    f"Firebase daily quota exhausted — disabling further writes for this session. "
+                    f"Error: {e}"
+                )
+                self._quota_exhausted = True
+            else:
+                logger.error(f"Failed to save reading to Firebase: {e}")
             return False
+
+    def save_reading_if_absent(self, reading_data: Dict, user_id: int) -> str:
+        """Skip the write if the document already exists.
+
+        Returns one of:
+          - ``"created"`` — wrote a new document
+          - ``"exists"``  — doc already present, skipped (no write charged)
+          - ``"quota"``   — quota exhausted, disabled for this session
+          - ``"error"``   — other failure (logged)
+        """
+        if not self.is_enabled():
+            return "error"
+        if getattr(self, "_quota_exhausted", False):
+            return "quota"
+        try:
+            reading_id = reading_data.get("reading_id", f"reading_{datetime.now().timestamp()}")
+            doc_ref = self.db.collection("readings").document(reading_id)
+            # Cheap point-read; counts against the 50K/day read budget.
+            if doc_ref.get().exists:
+                logger.debug(f"Reading {reading_id} already in Firebase, skipping")
+                return "exists"
+            reading_data["user_id"] = str(user_id)
+            reading_data["reading_id"] = reading_id
+            reading_data["timestamp"] = reading_data.get("timestamp", datetime.now().isoformat())
+            reading_data["synced_at"] = firestore.SERVER_TIMESTAMP
+            doc_ref.set(reading_data)
+            logger.info(f"Reading {reading_id} saved to Firebase (idempotent)")
+            return "created"
+        except Exception as e:
+            msg = str(e)
+            if "RESOURCE_EXHAUSTED" in msg or "gone over" in msg.lower() or "429" in msg:
+                logger.warning(
+                    f"Firebase daily quota exhausted during idempotent write — "
+                    f"disabling further writes. Error: {e}"
+                )
+                self._quota_exhausted = True
+                return "quota"
+            logger.error(f"Failed to save reading (idempotent) to Firebase: {e}")
+            return "error"
+
+    def is_quota_exhausted(self) -> bool:
+        return getattr(self, "_quota_exhausted", False)
+
+    def reset_quota_flag(self) -> None:
+        """Call at the start of a new day to re-enable writes."""
+        self._quota_exhausted = False
 
     def save_user_settings(self, user_id: int, settings: Dict) -> bool:
         if not self.is_enabled():
@@ -233,6 +290,9 @@ class FirebaseService:
     # ------------------------------------------------------------
     async def async_save_reading(self, reading_data: Dict, user_id: int) -> bool:
         return await asyncio.to_thread(self.save_reading, reading_data, user_id)
+
+    async def async_save_reading_if_absent(self, reading_data: Dict, user_id: int) -> str:
+        return await asyncio.to_thread(self.save_reading_if_absent, reading_data, user_id)
 
     async def async_save_user_settings(self, user_id: int, settings: Dict) -> bool:
         return await asyncio.to_thread(self.save_user_settings, user_id, settings)
