@@ -5,6 +5,33 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+- **Discord 6000-char / 10-embed per-message cap (50035 "Embed size exceeds
+  maximum size of 6000").** The earlier batching fix for the follow-up cap
+  (below) sent all of a reading's detail embeds in one `send(embeds=[...])`
+  call, but Discord also caps a single message at 6000 total embed characters
+  and 10 embeds — a real Celtic Cross reading (10 cards, long descriptions)
+  measured ~8700 chars and crashed `/tarot celtic` with a 400. Added
+  `bot/utils.py::chunk_embeds()` (character- and count-aware batching, order
+  preserved) and routed every batched embed send through it: `/tarot`,
+  `/tarotdm`, `/weekly`, `/daily`, `/changelog`, the 📖 reaction handler, and
+  the AI interpretation follow-up. Verified against real card data: weekly (5
+  cards) fits one message (4378 chars); Celtic Cross (10 cards) now safely
+  splits into 2 messages (5969 + 2742 chars) instead of crashing.
+- **Discord follow-up cap (40094) on multi-card readings.** `/weekly` and the
+  generic `/tarot` spread command previously sent every card's detail embed as
+  its own follow-up message — for a Celtic Cross reading that's summary + 10
+  details + layout image + AI status + AI chunks, blowing past Discord's ~5
+  follow-up limit per interaction. Detail embeds are now batched into a single
+  `ctx.send(embeds=[...])` call (10 embeds per message fits Discord's embed
+  limit, so even Celtic Cross fits). The AI interpretation path was also
+  merged: the "generating" status is still edited into the first AI embed, and
+  the remaining AI embeds are sent as a single batched message instead of one
+  follow-up per chunk. This keeps `/weekly` under the cap and prevents the same
+  crash on larger spreads.
+
 ## [1.2.0] - 2026-08-20
 
 ### Added

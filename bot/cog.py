@@ -64,7 +64,7 @@ from .models import (
     TarotReading,
     UserSettings,
 )
-from .utils import safe_task as _safe_task
+from .utils import chunk_embeds, safe_task as _safe_task
 from .views import FeatureView, HelpView
 
 # i18n: pulled from bot_i18n (kept at top of file so `_` is available everywhere
@@ -344,12 +344,17 @@ class TarotSystem(commands.Cog):
             # Interaction already expired; user will see no AI response.
             return
 
-        for embed in embeds[1:]:
+        extra = embeds[1:]
+        if extra:
             try:
-                await ctx.send(embed=embed)
+                # Batched (<=10 embeds, <=6000 chars/message) to stay under
+                # both the 5-follow-up cap (40094) and the per-message embed
+                # size cap (50035).
+                for batch in chunk_embeds(extra):
+                    await ctx.send(embeds=batch)
             except discord.NotFound:
                 # Interaction token expired mid-send; abort gracefully.
-                break
+                pass
 
         if was_truncated:
             try:
@@ -942,8 +947,12 @@ class TarotSystem(commands.Cog):
                         delete_after=12
                     )
                 elif emoji == "📖":
-                    for detail_embed in reading.to_detail_embeds():
-                        await ctx.send(embed=detail_embed)
+                    details = reading.to_detail_embeds()
+                    if details:
+                        # Batched (chunked to respect Discord's 10-embed /
+                        # 6000-char per-message caps), not one follow-up per card.
+                        for batch in chunk_embeds(details):
+                            await ctx.send(embeds=batch)
                 elif emoji == "📝":
                     await self._journal_prompt(ctx, reading)
 
@@ -1153,21 +1162,26 @@ class TarotSystem(commands.Cog):
                     file = discord.File(spread_img, filename="spread_layout.png")
                     await ctx.send("**📊 Spread Layout:**", file=file)
 
-            for detail_embed in reading.to_detail_embeds(page_size=1):
-                await ctx.send(embed=detail_embed)
+            details = reading.to_detail_embeds(page_size=1)
+            if details:
+                for batch in chunk_embeds(details):
+                    await ctx.send(embeds=batch)
 
             await self._send_ai_interpretation(ctx, reading)
 
             if len(cards) <= 5:
                 await ctx.send(_("tarot.card_images.header", lang=language))
 
+                card_embeds: List[discord.Embed] = []
+                card_files: List[discord.File] = []
                 for i, (card, position) in enumerate(zip(cards, positions)):
                     img_bytes = CardImageGenerator.generate_card_image(card)
                     if img_bytes:
                         file = discord.File(
-                            img_bytes, 
+                            img_bytes,
                             filename=f"card_{i+1}_{card.name.replace(' ', '_')}.png"
                         )
+                        card_files.append(file)
 
                         lbl = {
                             'title': _("tarot.card_images.title", lang=language, number=i+1, name=card.name),
@@ -1183,10 +1197,16 @@ class TarotSystem(commands.Cog):
                                       f"**{lbl['keywords']}:** {', '.join(card.keywords[:3])}",
                             color=embed.color
                         )
-
                         card_embed.set_image(url=f"attachment://{file.filename}")
-                        await ctx.send(embed=card_embed, file=file)
-                        await asyncio.sleep(0.5)
+                        card_embeds.append(card_embed)
+
+                if card_embeds:
+                    # Files are attached to embed 0's batch only if it's the
+                    # first message; safe here since card images are always
+                    # <=5 (guarded above) so they always fit one chunk_embeds
+                    # batch on the char cap, but still respect the 10-embed cap.
+                    for i, batch in enumerate(chunk_embeds(card_embeds)):
+                        await ctx.send(embeds=batch, files=card_files if i == 0 else None)
 
             await self._safe_add_reaction(reading_msg, "💾")
             await self._safe_add_reaction(reading_msg, "📖")
@@ -1420,16 +1440,22 @@ class TarotSystem(commands.Cog):
                 file = discord.File(spread_img, filename="spread_layout.png")
                 await ctx.author.send("**📊 Spread Layout:**", file=file)
 
-        for detail_embed in reading.to_detail_embeds(page_size=1):
-            await ctx.author.send(embed=detail_embed)
+        details = reading.to_detail_embeds(page_size=1)
+        if details:
+            for batch in chunk_embeds(details):
+                await ctx.author.send(embeds=batch)
 
         if self.ai_interpreter.is_configured() and user_settings.is_ai_enabled():
             ai_result = await self.ai_interpreter.generate_interpretation(reading)
             if ai_result:
                 ai_text, was_truncated, model_label = ai_result
-                await ctx.author.send(f"✨ {model_label}:")
-                for embed in self._ai_interpretation_embeds(reading, ai_text, model_label):
-                    await ctx.author.send(embed=embed)
+                ai_embeds = self._ai_interpretation_embeds(reading, ai_text, model_label)
+                # Batched (chunked) — "model:" prefix precedes the first batch.
+                if ai_embeds:
+                    batches = chunk_embeds(ai_embeds)
+                    await ctx.author.send(f"✨ {model_label}:", embeds=batches[0])
+                    for batch in batches[1:]:
+                        await ctx.author.send(embeds=batch)
 
         await ctx.send("✅ Reading telah dikirim melalui DM!")
 
@@ -1508,8 +1534,10 @@ class TarotSystem(commands.Cog):
 
             await ctx.send(embed=embed)
 
-            for detail_embed in reading.to_detail_embeds(page_size=1):
-                await ctx.send(embed=detail_embed)
+            details = reading.to_detail_embeds(page_size=1)
+            if details:
+                for batch in chunk_embeds(details):
+                    await ctx.send(embeds=batch)
 
             await self._send_ai_interpretation(ctx, reading)
 
@@ -2011,8 +2039,11 @@ class TarotSystem(commands.Cog):
             await reading.async_save_to_history()
             self._remember_reading(reading)
 
-            for detail_embed in reading.to_detail_embeds(page_size=1):
-                await ctx.send(embed=detail_embed)
+            details = reading.to_detail_embeds(page_size=1)
+            if details:
+                # Daily is 1 card, but batch (chunked) anyway for consistency.
+                for batch in chunk_embeds(details):
+                    await ctx.send(embeds=batch)
 
             await self._send_ai_interpretation(ctx, reading)
 
@@ -3176,6 +3207,7 @@ class TarotSystem(commands.Cog):
             changelog_relpath = "CHANGELOG.md"
         footer_text = _("changelog.footer", lang=language, path=changelog_relpath)
 
+        changelog_embeds = []
         for release in releases:
             version = release.get("version", "?")
             date = release.get("date")
@@ -3192,43 +3224,49 @@ class TarotSystem(commands.Cog):
             )
 
             sections = release.get("sections") or {}
+
             if not sections:
                 embed.add_field(name=header, value="_(no details)_", inline=False)
                 embed.set_footer(text=footer_text)
-                await ctx.send(embed=embed)
-                continue
+                changelog_embeds.append(embed)
+            else:
+                section_labels = {
+                    name: _("changelog.section_" + name.lower(), lang=language)
+                    for name in ("Added", "Changed", "Deprecated", "Removed", "Fixed", "Security")
+                    if name in sections
+                }
+                canonical_order = ("Added", "Changed", "Deprecated", "Removed", "Fixed", "Security")
+                ordered_names = [n for n in canonical_order if n in sections]
 
-            section_labels = {
-                name: _("changelog.section_" + name.lower(), lang=language)
-                for name in ("Added", "Changed", "Deprecated", "Removed", "Fixed", "Security")
-                if name in sections
-            }
-            canonical_order = ("Added", "Changed", "Deprecated", "Removed", "Fixed", "Security")
-            ordered_names = [n for n in canonical_order if n in sections]
+                def _truncate(text: str, limit: int = 1024) -> str:
+                    # Leave room for the trailing ellipsis so total stays <= limit.
+                    if len(text) <= limit:
+                        return text
+                    return text[: limit - 1].rstrip() + "…"
 
-            def _truncate(text: str, limit: int = 1024) -> str:
-                # Leave room for the trailing ellipsis so total stays <= limit.
-                if len(text) <= limit:
-                    return text
-                return text[: limit - 1].rstrip() + "…"
+                # First field: header + first section (keeps version anchored to content).
+                first_name = ordered_names[0]
+                first_label = section_labels[first_name]
+                first_bullets = "\n".join(f"• {b}" for b in sections[first_name])
+                embed.add_field(
+                    name=header,
+                    value=_truncate(f"**{first_label}**\n{first_bullets}"),
+                    inline=False,
+                )
 
-            # First field: header + first section (keeps version anchored to content).
-            first_name = ordered_names[0]
-            first_label = section_labels[first_name]
-            first_bullets = "\n".join(f"• {b}" for b in sections[first_name])
-            embed.add_field(
-                name=header,
-                value=_truncate(f"**{first_label}**\n{first_bullets}"),
-                inline=False,
-            )
+                for name in ordered_names[1:]:
+                    label = section_labels[name]
+                    bullets = "\n".join(f"• {b}" for b in sections[name])
+                    embed.add_field(name=label, value=_truncate(bullets), inline=False)
 
-            for name in ordered_names[1:]:
-                label = section_labels[name]
-                bullets = "\n".join(f"• {b}" for b in sections[name])
-                embed.add_field(name=label, value=_truncate(bullets), inline=False)
+                embed.set_footer(text=footer_text)
+                changelog_embeds.append(embed)
 
-            embed.set_footer(text=footer_text)
-            await ctx.send(embed=embed)
+        if changelog_embeds:
+            # Batched (chunked) — respects both the follow-up cap and the
+            # per-message 6000-char / 10-embed limits.
+            for batch in chunk_embeds(changelog_embeds):
+                await ctx.send(embeds=batch)
 
     @commands.hybrid_command(
         name='resetcooldown',
