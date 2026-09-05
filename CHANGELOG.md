@@ -8,6 +8,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
+- **Crash pada reaction menus saat pesan dihapus user (10008 "Unknown
+  Message").** Flow reaksi (`/tarot` spread menu, reading reactions 💾📖📝,
+  `/card` detail, 🔄 card-flip, `/cards` pagination) membersihkan pesan dengan
+  `clear_reactions()`/`remove_reaction()`/`edit()` yang hanya menangkap
+  `Forbidden`. Jika user menghapus pesan menu selama jendela 60–90 detik
+  `wait_for`, cleanup memicu `NotFound` → seluruh command crash. Semua mutasi
+  reaksi sekarang lewat helper `_safe_clear_reactions` /
+  `_safe_remove_reaction` / `_safe_edit_message` (baru) yang menelan
+  `Forbidden` + `HTTPException` (termasuk `NotFound`), jadi cleanup timeout /
+  pasca-pilih jadi no-op alih-alih crash. Ditambah regression guard
+  `tests/test_safe_reaction_cleanup.py`.
 - **Discord 6000-char / 10-embed per-message cap (50035 "Embed size exceeds
   maximum size of 6000").** The earlier batching fix for the follow-up cap
   (below) sent all of a reading's detail embeds in one `send(embeds=[...])`

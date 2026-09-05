@@ -528,6 +528,26 @@ class TarotSystem(commands.Cog):
         except (discord.Forbidden, discord.HTTPException) as e:
             logger.debug("clear_reactions failed on msg %d: %s", message.id, e)
 
+    @staticmethod
+    async def _safe_remove_reaction(message: discord.Message, reaction, user) -> None:
+        """Remove one reaction, swallowing Forbidden / NotFound / HTTP."""
+        try:
+            await message.remove_reaction(reaction, user)
+        except (discord.Forbidden, discord.HTTPException) as e:
+            logger.debug("remove_reaction failed on msg %d: %s", message.id, e)
+
+    @staticmethod
+    async def _safe_edit_message(message: discord.Message, **kwargs) -> None:
+        """Edit a message, swallowing NotFound (message deleted meanwhile).
+
+        Also swallows HTTPException so a mid-edit API failure degrades to a
+        no-op instead of crashing the whole command.
+        """
+        try:
+            await message.edit(**kwargs)
+        except (discord.NotFound, discord.HTTPException) as e:
+            logger.debug("edit failed on msg %d: %s", message.id, e)
+
     def _set_favourite(self, user_id: int, reading_id: str, value: bool = True) -> bool:
         """Toggle the favourite flag on a reading entry. Returns True if a row was updated.
 
@@ -956,16 +976,10 @@ class TarotSystem(commands.Cog):
                 elif emoji == "📝":
                     await self._journal_prompt(ctx, reading)
 
-                try:
-                    await reading_msg.remove_reaction(reaction, user)
-                except discord.Forbidden:
-                    pass
+                await self._safe_remove_reaction(reading_msg, reaction, user)
 
             except asyncio.TimeoutError:
-                try:
-                    await reading_msg.clear_reactions()
-                except discord.Forbidden:
-                    pass
+                await self._safe_clear_reactions(reading_msg)
                 break
 
     async def _journal_prompt(self, ctx, reading: TarotReading):
@@ -1279,33 +1293,28 @@ class TarotSystem(commands.Cog):
             selected_index = reactions.index(str(reaction.emoji))
             selected_spread = spread_keys[selected_index]
 
-            try:
-                await menu_msg.clear_reactions()
-            except discord.Forbidden:
-                pass
+            await self._safe_clear_reactions(menu_msg)
 
             embed = discord.Embed(
                 title="🔮 Spread Dipilih" if language == "id" else "🔮 Spread Selected",
                 description=f"Memulai reading `{selected_spread}` untuk {ctx.author.mention}.",
                 color=SPREADS[selected_spread]["color"]
             )
-            await menu_msg.edit(embed=embed)
+            await self._safe_edit_message(menu_msg, embed=embed)
 
             tarot_command = self.bot.get_command("tarot")
             if tarot_command:
                 await ctx.invoke(tarot_command, spread_type=selected_spread)
 
         except asyncio.TimeoutError:
-            try:
-                await menu_msg.clear_reactions()
-            except discord.Forbidden:
-                pass
+            await self._safe_clear_reactions(menu_msg)
 
             lbl = {
                 'title': _("tarot.spread_menu.timeout_title", lang=language),
                 'description': _("tarot.spread_menu.timeout_desc", lang=language),
             }
-            await menu_msg.edit(
+            await self._safe_edit_message(
+                menu_msg,
                 embed=discord.Embed(
                     title=lbl['title'],
                     description=lbl['description'],
@@ -1629,18 +1638,12 @@ class TarotSystem(commands.Cog):
             selected_index = reactions.index(str(reaction.emoji))
             selected_card = TarotCard(selectable_cards[selected_index])
 
-            try:
-                await msg.clear_reactions()
-            except discord.Forbidden:
-                pass
+            await self._safe_clear_reactions(msg)
 
             await self._send_card_info(ctx, selected_card, f"🃏 {selected_card.name}", language)
 
         except asyncio.TimeoutError:
-            try:
-                await msg.clear_reactions()
-            except discord.Forbidden:
-                pass
+            await self._safe_clear_reactions(msg)
 
     async def _send_card_info(self, ctx, card: TarotCard, title: str, language: str):
         if card.is_major:
@@ -1753,25 +1756,16 @@ class TarotSystem(commands.Cog):
                 file = discord.File(img_bytes, filename=filename)
                 embed.set_image(url=f"attachment://{file.filename}")
 
-                await msg.edit(embed=embed)
-                try:
-                    await msg.remove_reaction("🔄", user)
-                except discord.Forbidden:
-                    pass
+                await self._safe_edit_message(msg, embed=embed)
+                await self._safe_remove_reaction(msg, "🔄", user)
 
                 await ctx.send(_("card.orientation_changed", lang=language, orientation=card.orientation_text), file=file)
             else:
-                await msg.edit(embed=embed)
-                try:
-                    await msg.remove_reaction("🔄", user)
-                except discord.Forbidden:
-                    pass
+                await self._safe_edit_message(msg, embed=embed)
+                await self._safe_remove_reaction(msg, "🔄", user)
 
         except asyncio.TimeoutError:
-            try:
-                await msg.clear_reactions()
-            except discord.Forbidden:
-                pass
+            await self._safe_clear_reactions(msg)
 
     @commands.hybrid_command(
         name='cards',
@@ -1875,17 +1869,11 @@ class TarotSystem(commands.Cog):
                     )
                     new_embed.set_footer(text=_("cards.page_footer", lang=language, current=current_page+1, total=len(pages)))
 
-                    await msg.edit(embed=new_embed)
-                    try:
-                        await msg.remove_reaction(reaction, user)
-                    except discord.Forbidden:
-                        pass
+                    await self._safe_edit_message(msg, embed=new_embed)
+                    await self._safe_remove_reaction(msg, reaction, user)
 
                 except asyncio.TimeoutError:
-                    try:
-                        await msg.clear_reactions()
-                    except discord.Forbidden:
-                        break
+                    await self._safe_clear_reactions(msg)
                     break
 
     @commands.hybrid_command(
