@@ -8,6 +8,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
+- **Crash saat memilih spread dari menu reaction (`10003 Unknown Channel`).**
+  `/tarot` menampilkan menu melalui interaction, lalu memanggil ulang command
+  dengan `ctx.invoke()` setelah user memilih reaction. Context yang sama masih
+  membawa interaction webhook, sehingga output reading berikutnya (`card
+  images`, detail, dan AI) dapat dikirim ke channel endpoint yang invalid dan
+  membuat command crash. Ditambahkan `_ChannelContextProxy` untuk menjalankan
+  reading terpilih melalui `ctx.channel.send()` biasa, tanpa follow-up webhook;
+  handler juga mengabaikan `10003` bila channel hilang saat race. Ditambah
+  regression test `tests/test_menu_context_proxy.py`.
 - **Crash pada reaction menus saat pesan dihapus user (10008 "Unknown
   Message").** Flow reaksi (`/tarot` spread menu, reading reactions 💾📖📝,
   `/card` detail, 🔄 card-flip, `/cards` pagination) membersihkan pesan dengan

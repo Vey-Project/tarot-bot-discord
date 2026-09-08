@@ -87,6 +87,36 @@ def is_bot_admin(ctx) -> bool:
 logger = logging.getLogger(__name__)
 
 
+class _ChannelContextProxy:
+    """Route a nested menu command to normal channel messages.
+
+    Reaction menus already use the original interaction response. Reusing that
+    interaction context for the selected reading routes every ``ctx.send`` to
+    the interaction follow-up webhook, which can expire or return 10003
+    (Unknown Channel). Keep the original context for metadata, but make output
+    use the channel message API instead.
+    """
+
+    def __init__(self, context):
+        self._context = context
+        self.channel = context.channel
+
+    async def send(self, *args, **kwargs):
+        # ``Context.send`` would use interaction.response/followup here. The
+        # channel's Messageable.send is independent of that interaction.
+        kwargs.pop("ephemeral", None)
+        return await self.channel.send(*args, **kwargs)
+
+    def typing(self):
+        return self.channel.typing()
+
+    async def invoke(self, command, /, *args, **kwargs):
+        return await command(self, *args, **kwargs)
+
+    def __getattr__(self, name):
+        return getattr(self._context, name)
+
+
 class TarotSystem(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -1304,7 +1334,13 @@ class TarotSystem(commands.Cog):
 
             tarot_command = self.bot.get_command("tarot")
             if tarot_command:
-                await ctx.invoke(tarot_command, spread_type=selected_spread)
+                # The menu already consumed the original interaction response.
+                # Run the selected reading through normal channel sends rather
+                # than reusing the interaction follow-up webhook.
+                await tarot_command(
+                    _ChannelContextProxy(ctx),
+                    spread_type=selected_spread,
+                )
 
         except asyncio.TimeoutError:
             await self._safe_clear_reactions(menu_msg)
@@ -3560,6 +3596,13 @@ class TarotSystem(commands.Cog):
                     await ctx.send(msg)
                 except discord.NotFound:
                     pass
+            return
+
+        # The channel/message may disappear while a reaction menu is active.
+        # Treat Discord 10003 as a benign race; there is nowhere useful to
+        # send an error response once the channel is gone.
+        if isinstance(original, discord.HTTPException) and getattr(original, "code", None) == 10003:
+            logger.debug("Ignoring Unknown Channel after command output race")
             return
 
         if isinstance(original, commands.CommandOnCooldown):
