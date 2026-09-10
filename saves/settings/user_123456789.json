@@ -3,6 +3,6 @@
   "language": "id",
   "reading_mode": "deep",
   "ai_enabled": true,
-  "ai_model": "kr/claude-sonnet-4.5",
+  "ai_model": "tarot-bot-discord",
   "updated_at": "2026-08-11T14:18:29.772386"
 }
