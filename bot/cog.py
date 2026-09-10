@@ -1041,6 +1041,13 @@ class TarotSystem(commands.Cog):
         user_settings, _server_settings = self._get_settings(ctx.author.id, ctx.guild.id if ctx.guild else None)
         lang = user_settings.get_lang()
 
+        try:
+            await ctx.defer()
+        except (discord.NotFound, discord.HTTPException):
+            # Interaction already expired; there is nowhere useful to send
+            # the model list. Just return quietly.
+            return
+
         def _fetch_models_sync():
             try:
                 response = requests.get(f"{NINE_ROUTER_BASE_URL}/models", timeout=5)

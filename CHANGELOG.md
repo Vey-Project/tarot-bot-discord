@@ -17,6 +17,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   reading terpilih melalui `ctx.channel.send()` biasa, tanpa follow-up webhook;
   handler juga mengabaikan `10003` bila channel hilang saat race. Ditambah
   regression test `tests/test_menu_context_proxy.py`.
+- **`/aimodels` crash saat 9Router lambat (`10062 Unknown interaction`).**
+  Command admin untuk menampilkan daftar model 9Router memanggil
+  `requests.get(...)` via `asyncio.to_thread()` dengan timeout 5 detik.
+  Bila 9Router merespons lambat, interaction Discord kadaluarsa sebelum
+  `ctx.send(embed=...)` dijalankan → `10062`. Ditambahkan `ctx.defer()` di
+  awal command agar interaction bertahan selama I/O; bila interaction sudah
+  expired, command berhenti diam-diam.
 - **Crash pada reaction menus saat pesan dihapus user (10008 "Unknown
   Message").** Flow reaksi (`/tarot` spread menu, reading reactions 💾📖📝,
   `/card` detail, 🔄 card-flip, `/cards` pagination) membersihkan pesan dengan
