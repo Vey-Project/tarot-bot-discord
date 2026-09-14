@@ -106,7 +106,7 @@ async def on_ready():
     print("🔮 Tarot Bot v2.5.0")
     print(f"📊 {len(TAROT_CARDS)} tarot cards loaded")
     print(f"🃏 {len(SPREADS)} spread types available")
-    print("🌐 Languages: Indonesian, English")
+    print("🌐 Languages: Indonesian, English, Portuguese, Spanish, German, French, Italian, Hungarian, Dutch, Polish, Portuguese-BR, Romanian, Swedish, Vietnamese, Turkish, Czech, Russian, Ukrainian, Thai, Chinese Simplified, Japanese, Traditional Chinese, Korean, Spanish LATAM")
     print("🎭 Modes: simple, deep, gentle, direct")
     print(f'🤖 AI: {"9Router" if NINE_ROUTER_ENABLED else "disabled"} ({NINE_ROUTER_MODEL})')
     print(f'✨ Slash commands: {"sync enabled" if SYNC_SLASH_COMMANDS else "sync disabled"}')

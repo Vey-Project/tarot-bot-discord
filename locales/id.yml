@@ -103,9 +103,9 @@ ai_interpretation:
 language:
   current: '🌐 Bahasa kamu saat ini: **{lang_code}**
 
-    Gunakan `!language id`, `en`, `pt`, `es`, atau `de` untuk ganti.'
-  error: '❌ Bahasa tidak dikenal. Pilihan yang tersedia: `id`, `en`, `pt`, `es`, `de`'
-  help: Gunakan `!language id`, `en`, `pt`, `es`, atau `de`
+    Gunakan `!language id`, `en`, `pt`, `es`, `de`, `fr`, `hu`, `it`, `nl`, `pl`, `ro`, `pt-BR`, `sv`, `vi`, `tr`, `cs`, `ru`, `uk`, `th`, `zh-CN`, `ja`, `zh-TW`, `ko`, `es-419` untuk ganti.'
+  error: '❌ Bahasa tidak dikenal. Pilihan yang tersedia: `id`, `en`, `pt`, `es`, `de`, `fr`, `hu`, `it`, `nl`, `pl`, `ro`, `pt-BR`, `sv`, `vi`, `tr`, `cs`, `ru`, `uk`, `th`, `zh-CN`, `ja`, `zh-TW`, `ko`, `es-419`'
+  help: Gunakan `!language id`, `en`, `pt`, `es`, `de`, `fr`, `hu`, `it`, `nl`, `pl`, `ro`, `pt-BR`, `sv`, `vi`, `tr`, `cs`, `ru`, `uk`, `th`, `zh-CN`, `ja`, `zh-TW`, `ko`, `es-419`
   set: ✅ Bahasa diubah ke **{lang_code}**
   supported_list: 'Supported: {list}'
 mode:
