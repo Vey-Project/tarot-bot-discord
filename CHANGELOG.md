@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
+- **Boot banner and `/language` help only showed 5 languages.** The startup
+  banner in `bot/bot.py` and the `language.error`/`language.help` strings in
+  `locales/id.yml` still listed only `id, en, pt, es, de` even though the bot
+  ships with 24 locale files. Updated both to show the full supported set.
 - **Crash saat memilih spread dari menu reaction (`10003 Unknown Channel`).**
   `/tarot` menampilkan menu melalui interaction, lalu memanggil ulang command
   dengan `ctx.invoke()` setelah user memilih reaction. Context yang sama masih
