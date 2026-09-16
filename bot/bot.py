@@ -38,7 +38,8 @@ _webhook_handler: DiscordWebhookHandler | None = None
 logger = logging.getLogger(__name__)
 
 intents = discord.Intents.default()
-intents.message_content = True
+# Slash commands are primary; !commands remain available in DMs.
+# Mention content is available, but @TAROT is not a configured command prefix.
 
 
 def _resolve_author_lang(ctx) -> str:
