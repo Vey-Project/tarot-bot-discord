@@ -50,7 +50,7 @@ A self-hostable Discord bot for tarot readings, daily card draws, personal refle
 - **Cooldown errors are handled** in both prefix and slash surfaces — no "Task exception was never retrieved" warnings in logs
 - **User-owned data** — export anytime, delete anytime
 - **No telemetry** sent anywhere except to the AI endpoint (only when AI is enabled)
-- **`message_content` intent only** — no `members` privileged intent required
+- **No privileged intents** — `message_content` and `members` are both off, so the bot needs no Developer Portal verification at any guild size
 
 ### 📜 Logging
 - **Console** (`stdout`, INFO+) — always on
@@ -227,7 +227,9 @@ Switch with `!language [code]` or `/language [code]`. The `cooldown.global` and 
 
 ## 🎮 Commands
 
-The bot registers **36 hybrid commands** — every command below works as both `!prefix` and `/slash`.
+The bot registers **36 commands, exposed as `/slash` commands** — type `/tarot`, `/help`, and so on.
+
+> **The `!` prefix shown in the tables below is legacy naming, not working syntax.** The bot no longer requests the privileged `message_content` intent, which it would need to read non-command messages, so `!tarot` does nothing. Every row below works as the slash command with the same name minus the `!`.
 
 ### 🔮 Public commands (30)
 
@@ -379,7 +381,7 @@ DISCORD_LOG_THROTTLE_SECONDS=5.0
 - ✅ **User-owned data** — `!exportdata` (download JSON) and `!deletedata confirm` (wipe) anytime
 - ✅ **No telemetry** sent anywhere except to the AI endpoint (only when AI is enabled)
 - ✅ **Discord tokens and API keys** live only in `.env` (gitignored)
-- ✅ **`members` privileged intent is disabled** — bot only requires `message_content`
+- ✅ **No privileged intents are requested** — neither `message_content` nor `members`
 - ✅ **Local-first** storage; cloud sync is opt-in
 - ✅ **Admin-gated commands** for sensitive operations (sync, cooldowns, internal stats)
 - ✅ **Webhook log redactor** masks tokens and snowflake IDs before they ever reach Discord
@@ -388,7 +390,7 @@ DISCORD_LOG_THROTTLE_SECONDS=5.0
 
 ## ⚠️ Discord Privileged Intents
 
-At **10,000+ users**, Discord requires verification for the `message_content` privileged intent. Steps to apply:
+None. The bot requests **no privileged intents** — `message_content` and `members` are both off — so no Developer Portal verification is required at any guild size. The tradeoff is that prefix (`!`) commands do not work; every command is slash-only. If you re-enable `message_content` and want prefix commands back, then at 10,000+ users Discord requires verification:
 
 1. Open https://discord.com/developers/applications/{APP_ID}/bot
 2. Click **"Request Verification"**
@@ -468,7 +470,7 @@ If you start hitting limits, the **first refactor** should be moving `readings.j
 - Run `pip install -r requirements.txt` again
 
 **Commands not responding:**
-- Confirm `message_content` intent is enabled in Discord Developer Portal
+- Remove `MESSAGE_CONTENT` from the bot's privileged intents (it is not requested)
 - Confirm bot has permission to read & send messages in the channel
 - For DMs: ensure user has DMs open
 
