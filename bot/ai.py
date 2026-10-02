@@ -36,6 +36,25 @@ logger = logging.getLogger(__name__)
 AI_CALL_SEMAPHORE = asyncio.Semaphore(5)
 
 
+class NonRetryableAIError(RuntimeError):
+    """9Router rejected the request on its own terms (4xx contract violation).
+
+    Retrying an identical payload fails identically, so the caller should
+    stop immediately instead of burning the full retry budget.
+    """
+
+
+# Client errors worth one more shot: the upstream was merely busy.
+RETRYABLE_HTTP_STATUS = frozenset({408, 409, 429})
+
+
+def is_retryable_status(status: int) -> bool:
+    """False only for 4xx that will fail the same way on every retry."""
+    if status in RETRYABLE_HTTP_STATUS:
+        return True
+    return status < 400 or status >= 500
+
+
 class NineRouterInterpreter:
     """Generates tarot interpretations via 9Router (OpenAI-compatible API).
 
@@ -120,7 +139,9 @@ class NineRouterInterpreter:
 
         async with AI_CALL_SEMAPHORE:
             last_error: Optional[Exception] = None
+            attempts_used = 0
             for attempt in range(1, self.max_retries + 1):
+                attempts_used = attempt
                 try:
                     text, was_truncated = await loop.run_in_executor(
                         None, self._call_9router_sync, prompt, model
@@ -130,6 +151,12 @@ class NineRouterInterpreter:
                             f"9Router succeeded on attempt {attempt}/{self.max_retries}"
                         )
                     return text, was_truncated, self.model_label(model)
+                except NonRetryableAIError as e:
+                    # Deterministic client error: the same request would fail
+                    # the same way 9 more times, each after a full timeout.
+                    last_error = e
+                    logger.error(f"9Router rejected the request, not retrying: {e}")
+                    break
                 except Exception as e:
                     last_error = e
                     logger.warning(
@@ -140,8 +167,8 @@ class NineRouterInterpreter:
                         await asyncio.sleep(self.retry_backoff * attempt)
 
             logger.error(
-                f"9Router interpretation failed after {self.max_retries} attempts; "
-                f"last error: {last_error}"
+                f"9Router interpretation failed after {attempts_used}/"
+                f"{self.max_retries} attempts; last error: {last_error}"
             )
             return None
 
@@ -172,6 +199,15 @@ class NineRouterInterpreter:
             url, json=payload, headers=headers, timeout=self.timeout
         )
 
+        # Status first: a 503 HTML error page would otherwise be misreported
+        # as "invalid JSON", and the server's own complaint never gets logged.
+        if not response.ok:
+            snippet = (response.text or "")[:300].replace("\n", " ")
+            message = f"9Router HTTP {response.status_code}: {snippet}"
+            if is_retryable_status(response.status_code):
+                raise requests.HTTPError(message, response=response)
+            raise NonRetryableAIError(message)
+
         if not response.text or not response.text.strip():
             raise RuntimeError("9Router returned empty response")
 
@@ -181,8 +217,6 @@ class NineRouterInterpreter:
             raise RuntimeError(
                 f"9Router returned invalid JSON: {response.text[:100]}"
             ) from e
-
-        response.raise_for_status()
 
         text = ""
         if isinstance(data, dict):
