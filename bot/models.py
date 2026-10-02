@@ -9,6 +9,7 @@ from __future__ import annotations
 import io
 import json
 import logging
+import threading
 from datetime import datetime
 from enum import Enum
 from typing import Callable, Dict, List, Optional
@@ -408,6 +409,13 @@ class TarotCard:
         }
 
 
+# Serialises the read-modify-write in TarotReading.save_to_history. The file
+# is a single shared JSON document, so two commands saving at once would each
+# read the old snapshot and the second write would drop the first reading.
+# Module-level (not per-instance) so it actually serialises.
+_READINGS_WRITE_LOCK = threading.Lock()
+
+
 class TarotReading:
     """A complete reading: cards, positions, mode, history-relevant fields."""
 
@@ -477,45 +485,50 @@ class TarotReading:
         save_path = SAVES_DIR / filename
         save_path.parent.mkdir(parents=True, exist_ok=True)
 
-        try:
-            if save_path.exists():
-                with open(save_path, "r", encoding="utf-8") as history_file:
-                    data = json.load(history_file)
-            else:
-                data = {"readings": [], "statistics": {}}
+        with _READINGS_WRITE_LOCK:
+            try:
+                if save_path.exists():
+                    with open(save_path, "r", encoding="utf-8") as history_file:
+                        data = json.load(history_file)
+                else:
+                    data = {"readings": [], "statistics": {}}
 
-            readings = data.setdefault("readings", [])
-            readings.append({
-                "reading_id": self.reading_id,
-                "user_id": str(self.user_id),
-                "timestamp": self.timestamp.isoformat(),
-                "spread_type": self.spread_type,
-                "question": self.question,
-                "is_daily": self.is_daily,
-                "is_weekly": self.is_weekly,
-                "language": self.language,
-                "mode": self.mode,
-                "favourite": self.is_favourite,
-                "cards": [
-                    {
-                        "name": card.name,
-                        "orientation": card.orientation.value,
-                        "position": position,
-                    }
-                    for card, position in zip(self.cards, self.positions)
-                ],
-            })
-            data["statistics"] = {
-                "total_readings": len(readings),
-                "daily_readings": sum(1 for reading in readings if reading.get("is_daily")),
-                "weekly_readings": sum(1 for reading in readings if reading.get("is_weekly")),
-            }
+                readings = data.setdefault("readings", [])
+                readings.append({
+                    "reading_id": self.reading_id,
+                    "user_id": str(self.user_id),
+                    "timestamp": self.timestamp.isoformat(),
+                    "spread_type": self.spread_type,
+                    "question": self.question,
+                    "is_daily": self.is_daily,
+                    "is_weekly": self.is_weekly,
+                    "language": self.language,
+                    "mode": self.mode,
+                    "favourite": self.is_favourite,
+                    "cards": [
+                        {
+                            "name": card.name,
+                            "orientation": card.orientation.value,
+                            "position": position,
+                        }
+                        for card, position in zip(self.cards, self.positions)
+                    ]
+                })
+                data["statistics"] = {
+                    "total_readings": len(readings),
+                    "daily_readings": sum(1 for reading in readings if reading.get("is_daily")),
+                    "weekly_readings": sum(1 for reading in readings if reading.get("is_weekly")),
+                }
 
-            with open(save_path, "w", encoding="utf-8") as history_file:
-                json.dump(data, history_file, indent=2, ensure_ascii=False)
-        except (OSError, json.JSONDecodeError, TypeError) as exc:
-            logger.error("Failed to save reading %s: %s", self.reading_id, exc)
-            raise
+                # Write-then-rename: a crash mid-write leaves the previous
+                # file intact instead of a truncated JSON document.
+                tmp_path = save_path.with_suffix(save_path.suffix + ".tmp")
+                with open(tmp_path, "w", encoding="utf-8") as history_file:
+                    json.dump(data, history_file, indent=2, ensure_ascii=False)
+                tmp_path.replace(save_path)
+            except (OSError, json.JSONDecodeError, TypeError) as exc:
+                logger.error("Failed to save reading %s: %s", self.reading_id, exc)
+                raise
 
     async def async_save_to_history(self, filename: str = "readings.json") -> None:
         """Async-compatible history API used by the Discord command handlers."""
