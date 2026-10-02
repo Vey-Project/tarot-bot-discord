@@ -7,11 +7,55 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- **Prefix command (`!`) dinonaktifkan.** `message_content` intent (privileged,
+  butuh verifikasi bot di 10.000+ user) dihapus dari `bot/bot.py`. Semua 36
+  command tetap berjalan sebagai `/slash`, tapi input `!tarot` / `!help` tidak
+  lagi dibaca — `on_message` tidak pernah berjalan tanpa intent tersebut, dan
+  `command_prefix="!"` menjadi tidakberguna. README diperbarui supaya tidak lagi
+  menjanjikan prefix dan menjelaskan bahwa tidak ada privileged intent yang
+  diminta.
 ### Fixed
 - **Boot banner and `/language` help only showed 5 languages.** The startup
   banner in `bot/bot.py` and the `language.error`/`language.help` strings in
   `locales/id.yml` still listed only `id, en, pt, es, de` even though the bot
   ships with 24 locale files. Updated both to show the full supported set.
+- **Reading hilang diam-diam saat dua user `/tarot` bersamaan.**
+  `save_to_history` melakukan read-modify-write pada satu file `readings.json`
+  tanpa lock, jadi dua command yang berdekatan masing-masing membaca snapshot
+  lama dan write kedua menimpa yang pertama. `saves/readings.json` sudah punya 4
+  baris dengan `reading_id` yang sama — bukti persoalannya sudah terjadi.
+  Sekarang critical section (baca → tambah → tulis) dikunci
+  `_READINGS_WRITE_LOCK` di level modul, dan penulisan memakai write-then-rename
+  sehingga crash tidak meninggalkan JSON terpotong. Ditambah regression test
+  `tests/test_readings_json_serialised.py`.
+- **`reading_id` bentrok untuk reading di detik yang sama.** Id dibangun dari
+  `int(timestamp)`, sehingga dua reading user yang sama dalam satu detik berbagi
+  id — merusak `/favourite` (toggle dua baris), `/share` (prefix ambigu), dan
+  doc id Firestore (write kedua dilewati sebagai "exists"). Sekarang memakai
+  presisi mikrodetik. Row lama tidak di-rekey, jadi link `/share` dan dokumen
+  Firestore yang sudah ada tetap resolve.
+- **Kata kunci safety salah tangkap (false positive).** `_check_sensitive`
+  memakai substring, sehingga "**information**" cocok dengan "**mati**" (harm),
+  "**asexual**" cocok dengan "**sexual**" (abuse), dan "**matikan** lampu" cocok
+  dengan "**mati**". Setiap false positive menyisipkan paragraf "ini bukan
+  nasihat profesional" ke prompt 9Router untuk pertanyaan biasa. Sekarang
+  pencocokan menghormati batas kata via `SAFETY_KEYWORD_RE`; frasa asli
+  ("bunuh diri", "kanker", "pelecehan") tetap terdeteksi.
+- **AI interpretation hilang saat interaction token kedaluwarsa (50027).**
+  `ctx.send()` di slash command mengembalikan `WebhookMessage` yang terikat
+  pada interaction token, yang Discord batalkan setelah 15 menit. Dengan
+  `NINE_ROUTER_API_TIMEOUT=120` × `NINE_ROUTER_MAX_RETRIES=10`, 9Router yang
+  lambat routinely melampaui itu → `status_msg.edit()` dapat 401 dan user tidak
+  pernah menerima readingnya. Sekarang 401/403 dialihkan ke
+  `ctx.channel.send()` (autentikasi sebagai bot, tanpa kedaluwarsa), dan sisa
+  payload dikirim lewat jalur yang sama agar tidak terbelah dua transport.
+- **Error handler crash saat melaporkan error (`10003 Unknown Channel`).**
+  `on_command_error` mengirim 7 balasan dengan `await ctx.send(...)` yang hanya
+  menangkap `discord.NotFound`, padahal 10003/10008 datang sebagai
+  `discord.HTTPException` biasa → hasilnya `Error in error handler: 10003`,
+  persis error yang paling perlu dilaporkan hilang. Semua balasan kini lewat
+  `_safe_reply()`.
 - **Crash saat memilih spread dari menu reaction (`10003 Unknown Channel`).**
   `/tarot` menampilkan menu melalui interaction, lalu memanggil ulang command
   dengan `ctx.invoke()` setelah user memilih reaction. Context yang sama masih
