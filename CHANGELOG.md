@@ -20,6 +20,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   banner in `bot/bot.py` and the `language.error`/`language.help` strings in
   `locales/id.yml` still listed only `id, en, pt, es, de` even though the bot
   ships with 24 locale files. Updated both to show the full supported set.
+- **9Router 4xx di-retry 10× dan body error tidak pernah masuk log.** Setiap
+  `400 Bad Request` (35× di `bot.log`) diulang sesuai `NINE_ROUTER_MAX_RETRIES`
+  walau error-nya deterministik, dan `raise_for_status()` dipanggil *setelah*
+  body di-parse sehingga halaman 503 dilaporkan sebagai "invalid JSON" tanpa
+  menyertakan pesan dari server. Sekarang status dicek lebih dulu, body error
+  dipotong 300 karakter dan dilog, dan `NonRetryableAIError` (4xx di luar
+  408/409/429) menghentikan retry seketika.
+- **Firebase gagal sinkron 101× tanpa ada yang mencoba ulang.** 98×
+  `ConnectionResetError(10054)` + 3× read timeout, masing-masing setelah
+  stall 120 detik dan dump traceback 40 baris. Sekarang pemanggilan blocking
+  dibungkus retry exponential backoff untuk error transient, dan circuit breaker
+  memutus sync setelah 5 kegagalan berturut-turut, sehingga host tanpa rute
+  berhenti menulis traceback berulang. Satu baris log, bukan 40.
 - **Reading hilang diam-diam saat dua user `/tarot` bersamaan.**
   `save_to_history` melakukan read-modify-write pada satu file `readings.json`
   tanpa lock, jadi dua command yang berdekatan masing-masing membaca snapshot
