@@ -443,7 +443,7 @@ class TarotReading:
         self.mode = mode
         self.is_favourite = is_favourite
         self.timestamp = datetime.now()
-        self.reading_id = f"{user_id}_{int(self.timestamp.timestamp())}"
+        self.reading_id = f"{user_id}_{self.timestamp.timestamp():.6f}"
         self._spread_info = SPREADS.get(spread_type, SPREADS[SpreadType.SINGLE.value])
         self.sensitive_topics = self._check_sensitive(question)
 
