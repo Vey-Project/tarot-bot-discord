@@ -9,6 +9,7 @@ from __future__ import annotations
 import io
 import json
 import logging
+import re
 import threading
 from datetime import datetime
 from enum import Enum
@@ -185,6 +186,19 @@ SAFETY_KEYWORDS: Dict[str, List[str]] = {
     "health": ["cancer", "kanker", "stroke", "schizophrenia", "skizofrenia"],
     "illegal": ["drugs", "narkoba", "hack", "bobol", "curi", "steal"],
 }
+
+
+# Compiled once so _check_sensitive does not re.compile per question. The
+# leading \b and trailing \b are what stop "mati" matching inside
+# "information" and "mati" matching inside "matikan".
+SAFETY_KEYWORD_RE = re.compile(
+    r"\b(" + "|".join(
+        re.escape(keyword)
+        for keywords in SAFETY_KEYWORDS.values()
+        for keyword in keywords
+    ) + r")\b",
+    re.IGNORECASE,
+)
 
 
 # ============================================================
@@ -450,13 +464,17 @@ class TarotReading:
     def _check_sensitive(self, question: str) -> List[str]:
         if not question:
             return []
+        matches = {match.group(0).lower() for match in SAFETY_KEYWORD_RE.finditer(question)}
+        if not matches:
+            return []
         detected = []
-        question_lower = question.lower()
         for category, keywords in SAFETY_KEYWORDS.items():
-            for keyword in keywords:
-                if keyword in question_lower:
-                    detected.append(category)
-                    break
+            if any(
+                re.search(r"\b" + re.escape(keyword) + r"\b", match, re.IGNORECASE)
+                for keyword in keywords
+                for match in matches
+            ):
+                detected.append(category)
         return detected
 
     def _get_text(self, translations: Dict) -> str:
