@@ -11,13 +11,16 @@ from __future__ import annotations
 import asyncio
 import logging
 import os
+import time
 from datetime import datetime
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from .config import (
     FIREBASE_CREDENTIALS_PATH,
     FIREBASE_DATABASE_URL,
     FIREBASE_ENABLED,
+    FIREBASE_MAX_TRANSPORT_RETRIES,
+    FIREBASE_RETRY_BACKOFF,
     FIREBASE_STORAGE_BUCKET,
 )
 
@@ -30,6 +33,28 @@ try:
     FIREBASE_AVAILABLE = True
 except ImportError:
     FIREBASE_AVAILABLE = False
+
+
+# Substrings that mark an error as worth another attempt. WinError 10054 is
+# the connection being reset by the peer — the exact failure that fills
+# bot.log on a host that briefly loses its route.
+_TRANSIENT_MARKERS = (
+    "connection aborted",
+    "connectionreseterror",
+    "connectionreset",
+    "read timed out",
+    "timed out",
+    "unavailable",
+    "deadline exceeded",
+    "too many requests",
+    "503",
+    "504",
+)
+
+# Consecutive transport failures after which we stop trying for the session.
+# A host with no outbound route would otherwise emit identical tracebacks all
+# day and keep burning the daily write budget.
+_MAX_CONSECUTIVE_TRANSPORT_FAILURES = 5
 
 
 class FirebaseService:
@@ -49,6 +74,11 @@ class FirebaseService:
             logger.info("Firebase is disabled or SDK not available")
             self.db = None
             self.bucket = None
+            self._quota_exhausted = False
+            self._transport_down = False
+            self._consecutive_transport_failures = 0
+            self._max_transport_retries = max(1, FIREBASE_MAX_TRANSPORT_RETRIES)
+            self._retry_backoff = max(0.0, FIREBASE_RETRY_BACKOFF)
             return
 
         try:
@@ -57,6 +87,11 @@ class FirebaseService:
                 self.enabled = False
                 self.db = None
                 self.bucket = None
+                self._quota_exhausted = False
+                self._transport_down = False
+                self._consecutive_transport_failures = 0
+                self._max_transport_retries = max(1, FIREBASE_MAX_TRANSPORT_RETRIES)
+                self._retry_backoff = max(0.0, FIREBASE_RETRY_BACKOFF)
                 return
 
             try:
@@ -73,6 +108,11 @@ class FirebaseService:
             self.db = firestore.client()
             self.bucket = storage.bucket() if FIREBASE_STORAGE_BUCKET else None
             self.enabled = True
+            self._quota_exhausted = False
+            self._transport_down = False
+            self._consecutive_transport_failures = 0
+            self._max_transport_retries = max(1, FIREBASE_MAX_TRANSPORT_RETRIES)
+            self._retry_backoff = max(0.0, FIREBASE_RETRY_BACKOFF)
             logger.info("Firebase service ready")
 
         except Exception as e:
@@ -80,15 +120,74 @@ class FirebaseService:
             self.enabled = False
             self.db = None
             self.bucket = None
+            self._quota_exhausted = False
+            self._transport_down = False
+            self._consecutive_transport_failures = 0
+            self._max_transport_retries = max(1, FIREBASE_MAX_TRANSPORT_RETRIES)
+            self._retry_backoff = max(0.0, FIREBASE_RETRY_BACKOFF)
 
     def is_enabled(self) -> bool:
         return self.enabled and self.db is not None
+
+    def _is_transient(self, exc: Exception) -> bool:
+        """True for errors a retry has a real chance of fixing."""
+        message = str(exc).lower()
+        return any(marker in message for marker in _TRANSIENT_MARKERS)
+
+    def _retrying(self, call, *args, **kwargs):
+        """Run a blocking Firestore call, retrying transient transport errors.
+
+        Raises whatever the call raised once the budget is spent; the
+        caller's own ``except`` block decides what that means.
+        """
+        if self._transport_down:
+            raise RuntimeError("Firebase transport marked down for this session")
+
+        last_error: Optional[Exception] = None
+        for attempt in range(1, self._max_transport_retries + 1):
+            try:
+                result = call(*args, **kwargs)
+            except Exception as exc:
+                if not self._is_transient(exc):
+                    raise
+                last_error = exc
+                self._consecutive_transport_failures += 1
+                if self._consecutive_transport_failures >= _MAX_CONSECUTIVE_TRANSPORT_FAILURES:
+                    self._transport_down = True
+                    logger.error(
+                        "Firebase unreachable after %d consecutive transport "
+                        "failures — disabling sync for this session. Last error: %s",
+                        self._consecutive_transport_failures, exc,
+                    )
+                    raise
+                delay = self._retry_backoff * attempt
+                logger.warning(
+                    "Firebase transport error (attempt %d/%d), retrying in %.1fs: %s",
+                    attempt, self._max_transport_retries, delay, exc,
+                )
+                if delay:
+                    time.sleep(delay)
+                continue
+            self._consecutive_transport_failures = 0
+            return result
+
+        # Budget spent on the last transient error: re-raise that original
+        # exception so the caller's handler sees the real cause, not a
+        # synthetic "unreachable" RuntimeError.
+        raise last_error
+
+    def is_transport_down(self) -> bool:
+        """True when the consecutive-failure breaker has tripped."""
+        return getattr(self, "_transport_down", False)
 
     # ------------------------------------------------------------
     # SYNC METHODS — call from threads / asyncio.to_thread
     # ------------------------------------------------------------
     def save_reading(self, reading_data: Dict, user_id: int) -> bool:
         if not self.is_enabled():
+            return False
+        if self.is_transport_down():
+            logger.debug("Firebase transport down; skipping write for this session")
             return False
         try:
             reading_id = reading_data.get("reading_id", f"reading_{datetime.now().timestamp()}")
@@ -97,7 +196,7 @@ class FirebaseService:
             reading_data["reading_id"] = reading_id
             reading_data["timestamp"] = reading_data.get("timestamp", datetime.now().isoformat())
             reading_data["synced_at"] = firestore.SERVER_TIMESTAMP
-            doc_ref.set(reading_data)
+            self._retrying(doc_ref.set, reading_data)
             logger.info(f"Reading {reading_id} saved to Firebase")
             return True
         except Exception as e:
@@ -126,20 +225,23 @@ class FirebaseService:
         """
         if not self.is_enabled():
             return "error"
+        if self.is_transport_down():
+            logger.debug("Firebase transport down; skipping write for this session")
+            return "error"
         if getattr(self, "_quota_exhausted", False):
             return "quota"
         try:
             reading_id = reading_data.get("reading_id", f"reading_{datetime.now().timestamp()}")
             doc_ref = self.db.collection("readings").document(reading_id)
             # Cheap point-read; counts against the 50K/day read budget.
-            if doc_ref.get().exists:
+            if self._retrying(doc_ref.get).exists:
                 logger.debug(f"Reading {reading_id} already in Firebase, skipping")
                 return "exists"
             reading_data["user_id"] = str(user_id)
             reading_data["reading_id"] = reading_id
             reading_data["timestamp"] = reading_data.get("timestamp", datetime.now().isoformat())
             reading_data["synced_at"] = firestore.SERVER_TIMESTAMP
-            doc_ref.set(reading_data)
+            self._retrying(doc_ref.set, reading_data)
             logger.info(f"Reading {reading_id} saved to Firebase (idempotent)")
             return "created"
         except Exception as e:

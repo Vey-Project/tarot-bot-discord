@@ -104,6 +104,11 @@ FIREBASE_CREDENTIALS_PATH = os.getenv("FIREBASE_CREDENTIALS_PATH", "")
 FIREBASE_DATABASE_URL = os.getenv("FIREBASE_DATABASE_URL", "")
 FIREBASE_STORAGE_BUCKET = os.getenv("FIREBASE_STORAGE_BUCKET", "")
 
+# Firestore transport resilience. 10054 (peer reset) and read timeouts are
+# common on flaky hosts; retrying with backoff recovers them.
+FIREBASE_MAX_TRANSPORT_RETRIES = _env_int("FIREBASE_MAX_TRANSPORT_RETRIES", 3)
+FIREBASE_RETRY_BACKOFF = _env_float("FIREBASE_RETRY_BACKOFF", 2.0)
+
 # Set after we try to import firebase_admin (mirrors main.py semantics)
 try:
     import firebase_admin
