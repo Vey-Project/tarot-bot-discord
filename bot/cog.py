@@ -368,11 +368,37 @@ class TarotSystem(commands.Cog):
         # burning follow-up messages on a "generating" placeholder that
         # expires Discord's interaction token (10062) and to stay under
         # the 5 follow-up per-interaction cap (40094).
+        #
+        # A ctx.send() inside a slash command returns a WebhookMessage bound
+        # to the interaction token, which Discord invalidates after 15 min. A
+        # slow 9Router routinely outlives that (timeout 120s x up to 10
+        # retries), and the edit then fails with 50027 "Invalid Webhook
+        # Token" - so fall back to a plain channel send, which authenticates
+        # as the bot and has no expiry.
+        first = embeds[0]
+        sent_to_channel = False
         try:
-            await status_msg.edit(content=None, embed=embeds[0])
+            await status_msg.edit(content=None, embed=first)
         except discord.NotFound:
             # Interaction already expired; user will see no AI response.
             return
+        except discord.HTTPException as e:
+            if e.status not in (401, 403):
+                raise
+            logger.warning(
+                "AI status edit rejected (%s); resending as a channel message", e.code
+            )
+            try:
+                await ctx.channel.send(embed=first)
+            except (discord.NotFound, discord.HTTPException):
+                logger.debug("channel fallback also failed", exc_info=True)
+                return
+            sent_to_channel = True
+
+        # Once the token is gone, ctx.send() is a dead route: send everything
+        # left through the channel so the reading is never split across a
+        # working and a broken transport.
+        send = ctx.channel.send if sent_to_channel else ctx.send
 
         extra = embeds[1:]
         if extra:
@@ -381,15 +407,15 @@ class TarotSystem(commands.Cog):
                 # both the 5-follow-up cap (40094) and the per-message embed
                 # size cap (50035).
                 for batch in chunk_embeds(extra):
-                    await ctx.send(embeds=batch)
-            except discord.NotFound:
+                    await send(embeds=batch)
+            except (discord.NotFound, discord.HTTPException):
                 # Interaction token expired mid-send; abort gracefully.
                 pass
 
         if was_truncated:
             try:
-                await ctx.send(_("ai_interpretation.truncated", lang=reading.language))
-            except discord.NotFound:
+                await send(_("ai_interpretation.truncated", lang=reading.language))
+            except (discord.NotFound, discord.HTTPException):
                 pass
 
     @staticmethod
