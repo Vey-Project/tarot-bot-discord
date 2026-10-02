@@ -137,9 +137,6 @@ class TarotSystem(commands.Cog):
         #                              "paused": bool}}}
         # In-memory mirror of saves/settings/reminders.json
         self.user_reminders: Dict[int, Dict[str, dict]] = defaultdict(dict)
-        # Serialises reads/writes to saves/readings.json across concurrent
-        # commands. Initialised lazily in cog_load (needs a running loop).
-        self._readings_lock: Optional[asyncio.Lock] = None
         # Settings cache: avoids re-reading JSON from disk on every command.
         # Pre-populated by _load_user_settings / _load_server_settings.
         self._user_settings_cache: Dict[int, UserSettings] = {}
@@ -3258,10 +3255,7 @@ class TarotSystem(commands.Cog):
         # Discord limits per embed: 25 fields, 1024 chars/value, 4096 total
         # chars. A single long release can blow past any of these, so build
         # one embed per release and truncate each field value safely.
-        try:
-            changelog_relpath = "CHANGELOG.md"  # relative to project root
-        except Exception:
-            changelog_relpath = "CHANGELOG.md"
+        changelog_relpath = "CHANGELOG.md"  # relative to project root
         footer_text = _("changelog.footer", lang=language, path=changelog_relpath)
 
         changelog_embeds = []

@@ -154,12 +154,6 @@ class FirebaseService:
             logger.error(f"Failed to save reading (idempotent) to Firebase: {e}")
             return "error"
 
-    def is_quota_exhausted(self) -> bool:
-        return getattr(self, "_quota_exhausted", False)
-
-    def reset_quota_flag(self) -> None:
-        """Call at the start of a new day to re-enable writes."""
-        self._quota_exhausted = False
 
     def save_user_settings(self, user_id: int, settings: Dict) -> bool:
         if not self.is_enabled():
