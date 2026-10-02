@@ -38,8 +38,12 @@ _webhook_handler: DiscordWebhookHandler | None = None
 logger = logging.getLogger(__name__)
 
 intents = discord.Intents.default()
-# Slash commands are primary; !commands remain available in DMs.
-# Mention content is available, but @TAROT is not a configured command prefix.
+# Slash commands are primary. The privileged MESSAGE_CONTENT intent is
+# deliberately not requested: it needs Developer Portal verification at
+# 10,000+ users, and prefix (!) commands do not work without it. This is
+# already the Intents.default() value, set explicitly so it cannot be
+# re-enabled by accident.
+intents.message_content = False
 
 
 def _resolve_author_lang(ctx) -> str:
@@ -71,6 +75,20 @@ def _resolve_author_lang(ctx) -> str:
         return DEFAULT_LANGUAGE
     except Exception:
         return "id"
+
+async def _safe_reply(ctx, message: str, *, ephemeral: bool = False) -> None:
+    """Reply to a failing command, tolerating a dead channel or message.
+
+    10003 (Unknown Channel) and 10008 (Unknown Message) arrive as plain
+    ``discord.HTTPException``, so catching only ``discord.NotFound`` lets the
+    error handler fail on top of the failure it is reporting. Mirrors
+    ``TarotSystem._safe_edit_message`` (bot/cog.py:570).
+    """
+    try:
+        await ctx.send(message, ephemeral=ephemeral)
+    except (discord.NotFound, discord.Forbidden, discord.HTTPException):
+        pass
+
 
 bot = commands.Bot(
     command_prefix="!",
@@ -132,19 +150,13 @@ async def on_command_error(ctx, error):
     """
     try:
         if isinstance(error, commands.CommandNotFound):
-            await ctx.send(
-                "❌ Command not found. Use `!help` to see all available commands."
-            )
+            await _safe_reply(ctx, "❌ Command not found. Use `!help` to see all available commands.")
         elif isinstance(error, commands.MissingRequiredArgument):
-            await ctx.send(
-                f"⚠️ Missing argument. Use `!help {ctx.command.name}` for proper usage."
-            )
+            await _safe_reply(ctx, f"⚠️ Missing argument. Use `!help {ctx.command.name}` for proper usage.")
         elif isinstance(error, commands.BadArgument):
-            await ctx.send(
-                "⚠️ Invalid argument. Please check your input and try again."
-            )
+            await _safe_reply(ctx, "⚠️ Invalid argument. Please check your input and try again.")
         elif isinstance(error, commands.MissingPermissions):
-            await ctx.send("⚠️ You don't have permission to use this command.")
+            await _safe_reply(ctx, "⚠️ You don't have permission to use this command.")
         elif isinstance(error, commands.CheckFailure):
             # BOT_ADMIN_IDS guard (or other custom @commands.check) denied.
             # Translate to the caller's preferred language so the rejection
@@ -155,10 +167,7 @@ async def on_command_error(ctx, error):
                 msg = _i18n("errors.admin_only", lang=language, user_id=author_id)
             except Exception:
                 msg = "🔒 This command is restricted to bot admins."
-            try:
-                await ctx.send(msg)
-            except discord.NotFound:
-                pass
+            await _safe_reply(ctx, msg)
         elif isinstance(error, commands.CommandOnCooldown):
             language = _resolve_author_lang(ctx)
             # Use the same _format_cooldown helper the cog uses so both prefix
@@ -176,21 +185,16 @@ async def on_command_error(ctx, error):
                 msg = _i18n("cooldown.global", lang=language, wait=wait_str)
             except Exception:
                 msg = f"⏳ Cooldown. Try again in **{wait_str}**."
-            try:
-                await ctx.send(msg)
-            except discord.NotFound:
-                pass
+            await _safe_reply(ctx, msg)
         elif isinstance(error, discord.NotFound) and "Unknown interaction" in str(error):
             pass
         else:
             logger.error(f"Command error: {error}", exc_info=True)
-            try:
-                await ctx.send(
-                    f"💥 An unexpected error occurred. Please try again later.\n"
-                    f"```{error.__class__.__name__}: {str(error)[:100]}```"
-                )
-            except discord.NotFound:
-                pass
+            await _safe_reply(
+                ctx,
+                f"💥 An unexpected error occurred. Please try again later.\n"
+                f"```{error.__class__.__name__}: {str(error)[:100]}```",
+            )
     except Exception as e:
         logger.error(f"Error in error handler: {e}")
 
